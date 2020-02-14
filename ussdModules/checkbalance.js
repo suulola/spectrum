@@ -6,10 +6,10 @@ module.exports = {
 					// console.log(val.wallet.balance);
 					menu.con(
 						`Your Balance is: N` +
-							val.wallet.balance +
+							val.wallet.balance / 100 +
 							'\n' +
 							'Ledger Balance is : N' +
-							val.wallet.ledger_balance +
+							val.wallet.ledger_balance / 100 +
 							'\n0. Back'
 					);
 				});

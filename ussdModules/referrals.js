@@ -27,12 +27,16 @@ module.exports = {
 							});
 						});
 					});
-				}
+				},
+				'0': 'welcome'
 			}
 		});
 		menu.state('referal.status', {
 			run: () => {
 				menu.con('Sent. Thank you \n Press 0 to go Back');
+			},
+			Next: {
+				'0': 'welcome'
 			}
 		});
 	}

@@ -1,10 +1,11 @@
 const { verifyPin, scheme } = require('./buddyFuctions');
 module.exports = {
+	setBaseUser: [],
 	welcomeState(menu) {
 		menu.state('welcomeState', {
 			run: () => {
 				menu.session.get('loginStatus').then((val) => {
-					console.log(val, 'login status');
+					// console.log(val, 'login status');
 					if (val === 'isLogedIn') {
 						menu.con(
 							'Welcome to ' +
@@ -14,7 +15,10 @@ module.exports = {
 					} else {
 						verifyPin(menu.val, menu.args.phoneNumber).then((val) => {
 							menu.session.set('data', val.data);
-							menu.session.get('data').then((val) => console.log(val, 'data from the welocome screen'));
+							this.setBaseUser = val.data;
+							menu.session.get('data').then((val) => {
+								console.log(val, 'data from the welocome screen');
+							});
 
 							menu.session.set('loginStatus', 'isLogedIn');
 							if (val.data._id) {

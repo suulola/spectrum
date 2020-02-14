@@ -7,7 +7,8 @@ module.exports = {
 	scheme: scheme,
 	apiUrl: apiUrl,
 	requestloan(payload) {
-		return axios.post(`${apiUrl}loans/requestLoan`, payload);
+		console.log(payload, payload);
+		return axios.post(`${apiUrl}loans/registerLoanAllData`, payload);
 	},
 	getLoanList() {
 		return axios.post(`${apiUrl}loans/getGenericLoans`, {
@@ -31,6 +32,64 @@ module.exports = {
 			xPin: pin,
 			scheme: scheme
 		});
+	},
+
+	calOnlineCharge(amt) {
+		console.log(amt, 'amount');
+		return Math.round(amt / 0.985 * 1);
+	},
+
+	hotPayBackLoan(authCode, baseUser, loanObj) {
+		// console.log(authCode, 'auth code'), console.log(loanObj, 'LoanObj'), console.log(baseUser, 'bASEUSER');
+		console.log(loanObj.details[0].interest);
+		// return true;
+		return axios.post(`${apiUrl}payments/payBackSpectrum`, {
+			authorization_code: authCode,
+			bu: baseUser,
+			loan: loanObj
+		});
+	},
+
+	hotChargeCard(amt, authCode, baseUser) {
+		let amount = amt * 100;
+		console.log(amount, 'amount in kobo');
+		console.log(baseUser, 'baseUSER');
+		console.log(authCode, 'authCode');
+		return axios.post(`${apiUrl}payments/chargeCardSpectrum`, {
+			authorization_code: authCode,
+			amount: amount,
+			bu: baseUser
+		});
+	},
+
+	getLoanBalance(userId) {
+		// console.log(userId, 'loan');
+		console.log(userId, 'userid used');
+		return axios.post(`${apiUrl}loans/getLoansByUserId/`, {
+			xid: userId,
+			scheme: scheme
+		});
+	},
+
+	updateLoanStatusToRepaid(id) {
+		return axios.post(`${apiUrl}loans/updateLoanStatusToRepaid/`, {});
+	},
+
+	updateWalletBalance(baseUser) {
+		return axios.post(`${apiUrl}fundWallet/fund`, baseUser);
+	},
+
+	calcPayable(amt, tenor, interest) {
+		console.log('Amt: ' + amt);
+		console.log('tenor: ' + tenor);
+		console.log('interest: ' + interest);
+		let tenorx = tenor * 1;
+		let intx = interest / 100 * 1;
+		intx = intx * amt;
+		let totinterest = intx * tenorx;
+		let amtx = amt * 1;
+
+		return totinterest + amtx;
 	},
 
 	message(text, phoneNum) {
