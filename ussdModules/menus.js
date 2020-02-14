@@ -19,7 +19,7 @@ module.exports = {
 						if (val.data.length < 1) {
 							menu.con('Welcome to ' + scheme + ' \n1. Register \n2. Help');
 						} else {
-							menu.con('Welcome to ' + scheme + ', Please enter pin');
+							menu.con('Welcome to ' + scheme + ', \nPlease enter pin');
 						}
 					},
 					(err) => {

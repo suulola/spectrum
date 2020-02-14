@@ -10,7 +10,7 @@ module.exports = {
 						menu.con(
 							'Welcome to ' +
 								scheme +
-								'\n 1. Loans \n 2. Check balance \n3. Fund Wallet \n4. Referals \n0. Exit '
+								'\n 1. Loans \n 2. Check balance \n3. Fund Wallet \n4. Referrals \n0. Exit '
 						);
 					} else {
 						verifyPin(menu.val, menu.args.phoneNumber).then((val) => {
