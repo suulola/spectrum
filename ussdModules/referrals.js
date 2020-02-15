@@ -33,7 +33,7 @@ module.exports = {
 		});
 		menu.state('referal.status', {
 			run: () => {
-				menu.con('Sent. Thank you \n Press 0 to go Back');
+				menu.con('Sent. Thank you \n Press 0 to go back');
 			},
 			Next: {
 				'0': 'welcome'

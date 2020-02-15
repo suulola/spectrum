@@ -17,7 +17,7 @@ module.exports = {
 							menu.session.set('data', val.data);
 							this.setBaseUser = val.data;
 							menu.session.get('data').then((val) => {
-								console.log(val, 'data from the welocome screen');
+								console.log(val, 'data from the welcome screen');
 							});
 
 							menu.session.set('loginStatus', 'isLogedIn');
@@ -25,10 +25,10 @@ module.exports = {
 								menu.con(
 									'Welcome to ' +
 										scheme +
-										'\n 1. Loans \n 2. Check balance \n3. Fund Wallet \n4. Referrals \n0. Exit '
+										'\n1. Loans \n2. Check balance \n3. Fund Wallet \n4. Referrals \n0. Exit '
 								);
 							} else {
-								menu.con('Please login again. Enter a valid pin');
+								menu.con('Please login again. Enter a valid PIN');
 							}
 						});
 					}

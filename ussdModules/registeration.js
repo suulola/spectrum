@@ -32,7 +32,7 @@ module.exports = {
 
 		menu.state('reg', {
 			run: () => {
-				menu.con('Welcome, Enter Firstname');
+				menu.con('Welcome, Enter First name');
 			},
 			next: {
 				'*[a-zA-Z]+': () => {
@@ -48,7 +48,7 @@ module.exports = {
 
 		menu.state('reg.lName', {
 			run: () => {
-				menu.con('Enter your Lastname');
+				menu.con('Enter your Surname');
 			},
 			next: {
 				'*[a-zA-Z]+': () => {
@@ -64,7 +64,7 @@ module.exports = {
 
 		menu.state('reg.Gender', {
 			run: () => {
-				menu.con('Please select a number for Gender \n 1. Male \n 2. Female \n 3. Others');
+				menu.con('Please select your Gender \n1. Male \n2. Female \n3. Others');
 			},
 
 			next: {
@@ -89,7 +89,7 @@ module.exports = {
 
 		menu.state('reg.Pin', {
 			run: () => {
-				menu.con('Please a Six(6) digit* pin enter your Pin');
+				menu.con('Please select/enter a six (6) digit* PIN');
 			},
 
 			next: {
@@ -108,7 +108,7 @@ module.exports = {
 
 		menu.state('inValid.Pin', {
 			run: () => {
-				menu.con('Pin Must be 6 digit, Pleae enter Pin');
+				menu.con('PIN must be 6 digits!\n Pleae enter a valid PIN');
 			},
 			next: {
 				'*[0-9]': () => {
@@ -126,7 +126,7 @@ module.exports = {
 
 		menu.state('reg.ConfirmPin', {
 			run: () => {
-				menu.con('Please Confirm Pin ');
+				menu.con('Please Confirm PIN ');
 			},
 
 			next: {
@@ -164,7 +164,7 @@ module.exports = {
 
 		menu.state('pin.misMatch', {
 			run: () => {
-				menu.con('Pin does not match, please Confirm again');
+				menu.con('PIN does not match!\n please confirm again');
 			},
 
 			next: {
@@ -193,7 +193,7 @@ module.exports = {
 				console.log(sessions, 'sesssion');
 				menu.con(
 					`${sessions[sId].fName} ${sessions[sId].sName}, ${sessions[sId].gender}, ${sessions[sId]
-						.pin1}, \nPress 1 to Confirm OR 0 to Loan Menu`
+						.pin1}, \nPress 1 to confirm OR 0 to to go to the loan menu`
 				);
 			},
 			next: {
@@ -219,7 +219,7 @@ module.exports = {
 								sess.sName +
 								' ' +
 								'.\nPlease visit http://spectrum.rubikpay.tech/' +
-								'for further transactions';
+								'for further instructions';
 
 							message(text, menu.args.phoneNumber).then((res) => {
 								console.log(res.data.messages);

@@ -21,7 +21,7 @@ module.exports = {
 		menu.state('loan', {
 			run: () => {
 				menu.con(
-					'Please select an option:\n 1. New Loan \n 2. Pay Back Loan \n 3. Get loan status \n 4. Check loan Balance \n 0. Back'
+					'Please select an option:\n1. New Loan \n2. Payback Loan \n3. Get loan status \n4. Check loan Balance \n0. Back'
 				);
 			},
 			next: {
@@ -104,10 +104,10 @@ module.exports = {
 											details.dueDate +
 											'\nElapsed by:' +
 											details.elapsedSn +
-											'\n 0.Back'
+											'\n0.Back'
 									);
 								} else {
-									menu.con(`You don't have a disbursed loan \n 1.Check loan status \n 0.Back`);
+									menu.con(`You don't have a disbursed loan \n1.Check loan status \n0.Back`);
 								}
 							});
 						}
@@ -314,7 +314,7 @@ module.exports = {
 							dt.tenorFrom +
 							' to ' +
 							dt.tenorTo +
-							' days' +
+							' months' +
 							'\n' +
 							'Interest: ' +
 							dt.interest +
@@ -390,7 +390,7 @@ module.exports = {
 												bu.fName +
 												' ' +
 												bu.sName +
-												'Your loan request was successfull. Please check loan status or visit http://spectrum.rubikpay.tech/ for more information. Thank you';
+												'Your loan request was successfull. Please check you loan status or visit http://spectrum.rubikpay.tech/ for more information. Thank you';
 											message(text, menu.args.phoneNumber).then((res) => {
 												console.log(res, 'message res');
 												resolve('loan.response');
@@ -434,7 +434,7 @@ module.exports = {
 			run: () => {
 				// requestloan()
 				let text =
-					'Your loan request was successfull. Please check loan status or visit http://spectrum.rubikpay.tech/ for more information. Thank you';
+					'Your loan request was successfull. Please check your loan status or visit http://spectrum.rubikpay.tech/ for more information. Thank you';
 				menu.end(text);
 			}
 		});

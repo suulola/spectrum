@@ -56,7 +56,7 @@ module.exports = {
 				let tot = calOnlineCharge(menu.val);
 				console.log(tot, 'online charge added');
 				menu.session.set('fundCardAmt', tot);
-				menu.con('Note: N' + tot + ' will be removed from your account\n' + '\n1.Proceed\n0.Back');
+				menu.con('Note: N' + tot + ' will be deducted from your account\n' + '\n1.Proceed\n0.Back');
 			},
 			next: {
 				'1': 'chargeCardState',
@@ -74,7 +74,7 @@ module.exports = {
 							if (data.data._id) {
 								menu.con('Transaction Successfull \n 0.Back Menu');
 							} else {
-								menu.end('Trnasaction was unsuccessfull, Please try again later');
+								menu.end('Transaction was unsuccessfull, Please try again later');
 							}
 						},
 						(err) => {

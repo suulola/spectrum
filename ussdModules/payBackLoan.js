@@ -2,7 +2,7 @@ module.exports = {
 	payBackLoanState(menu) {
 		menu.state('payBackLoan', {
 			run: () => {
-				menu.con('Please select card \n 1. Card 1 \n 2. Card 2');
+				menu.con('Please select card \n1. Card 1 \n2. Card 2');
 			},
 
 			next: {
