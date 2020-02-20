@@ -5,6 +5,7 @@ const {
 	message,
 	calOnlineCharge,
 	hotPayBackLoan,
+	calcRecurringLoanAmount,
 	hotChargeCard
 } = require('./buddyFuctions');
 
@@ -14,10 +15,13 @@ module.exports = {
 		let dt;
 		let cardList = [];
 		let cardAuth = [];
+		let cards = [];
 		let loanObj;
 		let loanindex;
 		let baseUser = '';
 		let authCode = '';
+		let cardChoice = {
+		}
 		menu.state('loan', {
 			run: () => {
 				menu.con(
@@ -199,7 +203,7 @@ module.exports = {
 					baseUser = '';
 					baseUser = val;
 					val.account_cards.map((card, index) => {
-						// console.log(card.authorization_code, card.bank, 'authbank');
+						console.log(card, 'authbank');
 						cardAuth.push({
 							cardName: card.bank,
 							authCode: card.authorization_code
@@ -280,7 +284,7 @@ module.exports = {
 				let loanList = [];
 				menu.session.get('loanData').then((loans) => {
 					loans.map((loans, index) => {
-						if (loans.title === 'POCKET MONEY ADVANCE') {
+						if (loans.title === 'MICRO LOAN') {
 							console.log('found');
 							loanindex = index;
 							loanList.push(1 + '. ' + loans.title);
@@ -309,14 +313,8 @@ module.exports = {
 							' to ' +
 							'N' +
 							Number(dt.loanAmtTo) / 100 +
-							'\n' +
-							'Duration: ' +
-							dt.tenorFrom +
-							' to ' +
-							dt.tenorTo +
-							' months' +
-							'\n' +
-							'Interest: ' +
+							'\nDuration: 1 month' +
+							'\nInterest: ' +
 							dt.interest +
 							'%' +
 							'\nPress 1 to continue' +
@@ -326,13 +324,54 @@ module.exports = {
 			},
 			next: {
 				'0': 'loan.list',
-				'1': 'loan.amount'
+				'1': 'loan.accSelect'
 			}
 		});
 
+		menu.state('loan.accSelect', {
+			run: () => {
+				menu.session.get('data').then((val) => {
+					cardList = [];
+					baseUser = '';
+					baseUser = val;
+					val.account_cards.map((card, index) => {
+						cards.push({
+							cardName: card.bank,
+							accNo: card.account_no,
+							authCode: card.authorization_code
+						});
+
+						cardList.push(index + 1 + '.' + card.bank);
+					});
+					
+					
+					// console.log(cardList.join('\n'));
+
+					menu.con('Please Select Card \n' + cardList.join('\n') + '\n' + '\n0.Back');
+				});
+				// menu.con('Please select disburse account')
+			}, 
+			next: {
+				'0': 'loan.confirm',
+				'*[0-9]': () => {
+					return new Promise ((resolve) => {
+						menu.session.set('sel', menu.val).then(
+							(val) => {
+								console.log(val)
+								resolve('loan.amount')
+							}
+						)
+					
+					})
+				}
+			}
+		})
+
 		menu.state('loan.amount', {
 			run: () => {
+				
 				// console.log(dt, ' loan data '),
+				// console.log(cardAuth, 'new card auth')
 				// console.log(baseUser, 'base user '),
 				menu.con(
 					'Please enter amount between \n' +
@@ -344,53 +383,66 @@ module.exports = {
 				);
 			},
 			next: {
-				'*[0-9]': () => {
+				'*[1-9]': () => {
 					return new Promise((resolve) => {
 						// resolve('loan.req.invalid');
+						let choiceIndex=''
 						menu.session.get('data').then((bu) => {
+							
+							// console.log(cardAuth[0].cardName, 'account cards')
+							console.log(Number(menu.val))
+					
 							if (bu.bvn !== '') {
-								if (menu.val <= dt.loanAmtTo / 100) {
+								
+								if ( Number(menu.val) >= (Number(dt.loanAmtFrom)/100) && Number(menu.val) <= (Number(dt.loanAmtTo)/100)) {
+									console.log('am here')
+									menu.session.get('sel').then(
+										(data)=> {
+											// console.log(data, 'selected')
+											choiceIndex = data - 1
+											console.log(choiceIndex, 'choice')
+									let tenor = 1 // FIXED TENOR FOR MICRO LOAN JUST FOR SPECTRUM
+									let mgtPerc = 3 // FIXED management percentage JUST FOR SPECTRUM
+									let paymentOffer = calcRecurringLoanAmount(menu.val, tenor, dt.interest, mgtPerc)
 									let payload = {
+										paymentOffer: paymentOffer,
 										offer: dt,
-										_id: bu._id,
 										amount: menu.val * 100,
-										transaction_desc: 'Loan advice for ' + 'Spectrum',
+										transaction_desc: "Loan advice for Spectrum",
 										customer_ref: bu.mobile.substring(1),
-										firstname: bu.fName,
-										surname: bu.sName,
+										firstname:bu.fName,
+										surname:bu.sName,
 										email: bu.email,
 										mobile_no: bu.mobile.substring(1),
-										scheme: 'Spectrum',
-										xid: bu._id,
-										userFullname: bu.fName + ' ' + bu.sName,
-										userMobile: bu.mobile,
+										scheme:'Spectrum',
+										xid:bu._id,
+										userFullname: bu.fName+' '+ bu.sName,
+										userMobile:bu.mobile,
 										userCode: bu.qrCode,
-										isOverdue: false,
-										hasPaid: false,
-										status: 'Pending',
-										principal: menu.val * 100,
-										interest: menu.val * 100,
-										duration: dt.tenorTo,
-										perc: dt.interest,
-										dueDate: '',
-										elapsedSn: '0',
-										account_name: '',
-										account_code: '',
-										account_no: '',
-										loanScore: '',
-										selected_loan_title: dt.title,
-										selected_loan_id: dt._id,
-										selected_loan_description: dt.description
+										isOverdue:false,
+										hasPaid:false,
+										status:"Pending",
+										principal:menu.val * 100,
+										interest: paymentOffer.monthlyRepayments,
+										duration:tenor,
+										perc:dt.interest,
+										dueDate:"",
+										elapsedSn:"0",
+										account_name:bu.account_cards[choiceIndex].bank,
+										account_code:bu.account_cards[choiceIndex].authorization_code,
+										account_no:bu.account_cards[choiceIndex].account_no
 									};
 									requestloan(payload).then(
 										(res) => {
+					
+											console.log(payload)
 											console.log(res, 'res data');
 											let text =
 												'Hi ' +
 												bu.fName +
 												' ' +
 												bu.sName +
-												'Your loan request was successfull. Please check you loan status or visit http://spectrum.rubikpay.tech/ for more information. Thank you';
+												' Your loan request was successfull. Please check your loan status or visit http://spectrum.rubikpay.tech/ for more information. Thank you';
 											message(text, menu.args.phoneNumber).then((res) => {
 												console.log(res, 'message res');
 												resolve('loan.response');
@@ -400,6 +452,9 @@ module.exports = {
 											console.log(err);
 										}
 									);
+										}
+									)
+									
 								} else {
 									resolve('loan.req.invalid');
 								}
