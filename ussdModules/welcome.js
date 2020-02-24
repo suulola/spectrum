@@ -4,9 +4,9 @@ module.exports = {
 	welcomeState(menu) {
 		menu.state('welcomeState', {
 			run: () => {
-				menu.session.get('loginStatus').then((val) => {
-					// console.log(val, 'login status');
-					if (val === 'isLogedIn') {
+				menu.session.get('loginStatus').then((status) => {
+					console.log(status, 'login status');
+					if (status !== '') {
 						menu.con(
 							'Welcome to ' +
 								scheme +
@@ -16,18 +16,22 @@ module.exports = {
 						verifyPin(menu.val, menu.args.phoneNumber).then((val) => {
 							menu.session.set('data', val.data);
 							this.setBaseUser = val.data;
-							menu.session.get('data').then((val) => {
-								console.log(val, 'data from the welcome screen');
-							});
-
-							menu.session.set('loginStatus', 'isLogedIn');
-							if (val.data._id) {
+							// menu.session.get('data').then((val) => {
+							// 	console.log(val, 'data from the welcome screen');
+							// });
+							// 	console.log(val.data._id, 'id')
+							
+							if (val.data._id !== undefined) {
+								console.log('NOT EMPTY')
+								menu.session.set('loginStatus', 'isLogedIn');
 								menu.con(
 									'Welcome to ' +
 										scheme +
-										'\n1. Loans \n2. Check balance \n3. Fund Wallet \n4. Referrals \n0. Exit '
+										'\n1. Loans \n2. Check bal \n3. Fund Wallet \n4. Referrals \n0. Exit '
 								);
 							} else {
+								menu.session.set('loginStatus', '');
+								console.log('is empty')
 								menu.con('Please login again. Enter a valid PIN');
 							}
 						});
@@ -39,7 +43,8 @@ module.exports = {
 				'2': 'checkBalance',
 				'3': 'fundWalletState',
 				'4': 'referal',
-				'0': 'exit'
+				'0': 'exit',
+				'*[1-9]': 'welcomeState'
 			}
 		});
 
