@@ -387,7 +387,7 @@ module.exports = {
       run: () => {
         menu.session.get("data").then(val => {
           console.log(val.bvn, "val bvn");
-          if (val.bvn !== "") {
+          if (val.bvn === "") {
             menu.con("BVN field cannot be empty. \nPress 1. To update BVN");
           } else if (val.account_cards === undefined) {
             text =
