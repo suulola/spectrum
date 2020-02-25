@@ -355,20 +355,22 @@ module.exports = {
       },
       next: {
         "*[0-9]": () => {
-          menu.session.get("data").then(data => {
-            verifyBVN(menu.val, data.fName, data.sName).then(res => {
-              console.log(res, "bvn response");
-              data["bvn"] = menu.val;
-              if (res === true) {
-                updateBVN(data).then(res => {
-                  console.log(res, "update response");
-                  return "loan.bvn.updated";
-                });
-              } else {
-                menu.con(
-                  "We are not able to verify your BVN at this time. Please try again later"
-                );
-              }
+          return new Promise(resolve => {
+            menu.session.get("data").then(data => {
+              verifyBVN(menu.val, data.fName, data.sName).then(res => {
+                console.log(res, "bvn response");
+                data["bvn"] = menu.val;
+                if (res === true) {
+                  updateBVN(data).then(res => {
+                    console.log(res, "update response");
+                    resolve("loan.bvn.updated");
+                  });
+                } else {
+                  menu.con(
+                    "We are not able to verify your BVN at this time. Please try again later"
+                  );
+                }
+              });
             });
           });
         }
@@ -376,7 +378,9 @@ module.exports = {
     });
 
     menu.state("loan.bvn.updated", {
-      run: menu.end("BVN UPDATED SUCCESSFULLY")
+      run: () => {
+        menu.end("BVN UPDATED SUCCESSFULLY");
+      }
     });
 
     menu.state("loan.accSelect", {
