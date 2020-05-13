@@ -9,8 +9,8 @@ module.exports = {
           if (status !== "") {
             menu.con(
               "Welcome to " +
-                scheme +
-                "\n1. Loans \n2. Check balance \n3. Fund Wallet \n4. Referrals \n0. Exit "
+              scheme +
+              "\n1. Loans \n2. Check balance \n3. Fund Wallet \n4. Services \n5. Referrals \n0. Exit "
             );
           } else {
             verifyPin(menu.val, menu.args.phoneNumber).then(val => {
@@ -22,8 +22,8 @@ module.exports = {
                 menu.session.set("loginStatus", "isLogedIn");
                 menu.con(
                   "Welcome to " +
-                    scheme +
-                    "\n1. Loans \n2. Check bal \n3. Fund Wallet \n4. Referrals \n0. Exit "
+                  scheme +
+                  "\n1. Loans \n2. Check balance \n3. Fund Wallet \n4. Services \n5. Referrals \n0. Exit "
                 );
               } else {
                 menu.session.set("loginStatus", "");
@@ -38,7 +38,8 @@ module.exports = {
         "1": "loan",
         "2": "checkBalance",
         "3": "fundWalletState",
-        "4": "referal",
+        "4": "services",
+        "5": "referal",
         "0": "exit",
         "*[1-9]": "welcomeState"
       }

@@ -8,13 +8,16 @@ const {
   calcRecurringLoanAmount,
   hotChargeCard,
   verifyBVN,
-  updateBVN
+  updateBVN,
+  checkIfUserExists
 } = require("./buddyFuctions");
 
 module.exports = {
   loanState(menu) {
     let payBackAmt = Number;
     let dt;
+    let loanData
+    let selectedCardIndex
     let cardList = [];
     let cardAuth = [];
     let cards = [];
@@ -23,6 +26,7 @@ module.exports = {
     let baseUser = "";
     let authCode = "";
     let cardChoice = {};
+    let userData;
     menu.state("loan", {
       run: () => {
         menu.con(
@@ -33,8 +37,10 @@ module.exports = {
         "1": () => {
           return new Promise(resolve => {
             getLoanList().then(
-              data => {
-                menu.session.set("loanData", data.data);
+              async (data) => {
+                userData = await checkIfUserExists(menu.args.phoneNumber)
+                userData = userData.data[0]
+                loanData = data.data
                 resolve("loan.list");
               },
               err => {
@@ -62,15 +68,15 @@ module.exports = {
 
                 menu.con(
                   "Details \n" +
-                    "status: " +
-                    val.status +
-                    "\nAmount: " +
-                    Number(details.principal) / 100 +
-                    "\nAmount with interest:" +
-                    Number(details.interest) / 100 +
-                    "\nDuration:" +
-                    details.duration +
-                    "\n0.Back"
+                  "status: " +
+                  val.status +
+                  "\nAmount: " +
+                  Number(details.principal) / 100 +
+                  "\nAmount with interest:" +
+                  Number(details.interest) / 100 +
+                  "\nDuration:" +
+                  details.duration +
+                  "\n0.Back"
                 );
               });
             } else {
@@ -95,21 +101,19 @@ module.exports = {
             } else {
               value.data.forEach(val => {
                 let details;
-
                 val.details.forEach(detail => (details = detail));
-
                 if (val.status === "Disbursed") {
                   menu.con(
                     "Details: \n" +
-                      "Amount:" +
-                      Number(details.interest) / 100 +
-                      "\nDuration:" +
-                      Number(details.duration) / 100 +
-                      "\n Due-Date:" +
-                      details.dueDate +
-                      "\nElapsed by:" +
-                      details.elapsedSn +
-                      "\n0.Back"
+                    "Amount:" +
+                    Number(details.interest) / 100 +
+                    "\nDuration:" +
+                    Number(details.duration) / 100 +
+                    "\n Due-Date:" +
+                    details.dueDate +
+                    "\nElapsed by:" +
+                    details.elapsedSn +
+                    "\n0.Back"
                   );
                 } else {
                   menu.con(
@@ -253,9 +257,9 @@ module.exports = {
         // console.log(totalAmount, 'totalAmount');
         menu.con(
           "Note: N" +
-            totalAmount +
-            " will be removed from your account\n" +
-            "\n1.Proceed\n0.Back"
+          totalAmount +
+          " will be removed from your account\n" +
+          "\n1.Proceed\n0.Back"
         );
       },
       next: {
@@ -298,21 +302,21 @@ module.exports = {
     menu.state("loan.list", {
       run: () => {
         let loanList = [];
-        menu.session.get("loanData").then(loans => {
-          loans.map((loans, index) => {
-            if (loans.title === "MICRO LOAN") {
-              console.log("found");
-              loanindex = index;
-              loanList.push(1 + ". " + loans.title);
-            }
-          });
-          menu.con(
-            "Please select a loan type" +
-              "\n" +
-              loanList.join("\n") +
-              "\n0. Back "
-          );
+
+        loanData.map((loans, index) => {
+          if (loans.title === "MICRO LOAN") {
+            console.log("found");
+            loanindex = index;
+            loanList.push(1 + ". " + loans.title);
+          }
         });
+        menu.con(
+          "Please select a loan type" +
+          "\n" +
+          loanList.join("\n") +
+          "\n0. Back "
+        );
+
       },
       next: {
         "1": "loan.confirm",
@@ -322,26 +326,27 @@ module.exports = {
 
     menu.state("loan.confirm", {
       run: () => {
-        menu.session.get("loanData").then(loans => {
-          dt = loans[loanindex];
-          menu.con(
-            "Loan Description \n" +
-              dt.title +
-              " LOAN" +
-              "\nAmount: " +
-              "N" +
-              Number(dt.loanAmtFrom) / 100 +
-              " to " +
-              "N" +
-              Number(dt.loanAmtTo) / 100 +
-              "\nDuration: 1 month" +
-              "\nInterest: " +
-              dt.interest +
-              "%" +
-              "\nPress 1 to continue" +
-              " OR 0 to go Back"
-          );
-        });
+
+        dt = loanData[loanindex];
+        console.log(dt, "first love")
+        menu.con(
+          "Loan Description \n" +
+          dt.title +
+          " LOAN" +
+          "\nAmount: " +
+          "N" +
+          Number(dt.loanAmtFrom) / 100 +
+          " to " +
+          "N" +
+          Number(dt.loanAmtTo) / 100 +
+          "\nDuration: 1 month" +
+          "\nInterest: " +
+          dt.interest +
+          "%" +
+          "\nPress 1 to continue" +
+          " OR 0 to go Back"
+        );
+
       },
       next: {
         "0": "loan.list",
@@ -356,7 +361,10 @@ module.exports = {
       next: {
         "*[0-9]": () => {
           return new Promise(resolve => {
+
             menu.session.get("data").then(data => {
+              console.log(data, "data")
+
               verifyBVN(menu.val, data.fName, data.sName).then(res => {
                 console.log(res, "bvn response");
                 data["bvn"] = menu.val;
@@ -385,48 +393,48 @@ module.exports = {
 
     menu.state("loan.accSelect", {
       run: () => {
-        menu.session.get("data").then(val => {
-          console.log(val.bvn, "val bvn");
-          if (val.bvn === "") {
-            menu.con("BVN field cannot be empty. \nPress 1. To update BVN");
-          } else if (val.account_cards === undefined) {
-            text =
-              "No account found, Please visit http://spectrum.rubikpay.tech/ to add an account.";
-            message(text, menu.args.phoneNumber).then(val => {
-              console.log(val, "data");
-              menu.con(text);
-            });
-          } else {
-            cardList = [];
-            baseUser = "";
-            baseUser = val;
-            val.account_cards.map((card, index) => {
-              cards.push({
-                cardName: card.bank,
-                accNo: card.account_no,
-                authCode: card.authorization_code
-              });
-              cardList.push(index + 1 + "." + card.bank);
-            });
 
-            // console.log(cardList.join('\n'));
+        console.log(userData.account_cards[0], "user data retrieved from")
+        if (userData.bvn === "") {
+          menu.con("BVN field cannot be empty. \nPress 1. To update BVN");
+        } else if (userData.account_cards[0] === undefined) {
+          console.log(userData.account_cards[0], "account cards")
+          // text =
+          //   "No account found, Please visit http://spectrum.rubikpay.tech/ to add an account.";
+          // message(text, menu.args.phoneNumber).then(val => {
+          //   console.log(val, "data");
+          //   menu.con(text);
+          // });
+        } else {
+          cardList = [];
+          baseUser = "";
+          baseUser = userData;
+          userData.account_cards.map((card, index) => {
+            cards.push({
+              cardName: card.bank,
+              accNo: card.account_no,
+              authCode: card.authorization_code
+            });
+            cardList.push(index + 1 + "." + card.bank);
+          });
 
-            menu.con(
-              "Please Select Card \n" + cardList.join("\n") + "\n" + "\n0.Back"
-            );
-          }
-        });
+          // console.log(cardList.join('\n'));
+
+          menu.con(
+            "Please Select Card \n" + cardList.join("\n") + "\n" + "\n0.Back"
+          );
+        }
+
         // menu.con('Please select disburse account')
       },
       next: {
-        "0": "loan.confirm",
-        "1": "loan.updateBVN",
+        // "0": "loan.confirm",
+        // "1": "loan.updateBVN",
         "*[0-9]": () => {
           return new Promise(resolve => {
-            menu.session.set("sel", menu.val).then(val => {
-              console.log(val);
-              resolve("loan.amount");
-            });
+            selectedCardIndex = menu.val
+
+            resolve("loan.amount");
           });
         }
       }
@@ -434,16 +442,14 @@ module.exports = {
 
     menu.state("loan.amount", {
       run: () => {
-        // console.log(dt, ' loan data '),
-        // console.log(cardAuth, 'new card auth')
-        // console.log(baseUser, 'base user '),
+        console.log(dt, "date")
         menu.con(
           "Please enter amount between \n" +
-            "N" +
-            Number(dt.loanAmtFrom) / 100 +
-            " to " +
-            "N" +
-            Number(dt.loanAmtTo) / 100
+          "N" +
+          Number(dt.loanAmtFrom) / 100 +
+          " to " +
+          "N" +
+          Number(dt.loanAmtTo) / 100
         );
       },
       next: {
@@ -451,85 +457,84 @@ module.exports = {
           return new Promise(resolve => {
             // resolve('loan.req.invalid');
             let choiceIndex = "";
-            menu.session.get("data").then(bu => {
-              // console.log(cardAuth[0].cardName, 'account cards')
-              console.log(Number(menu.val));
+            let bu = userData
+            // console.log(cardAuth[0].cardName, 'account cards')
+            console.log(Number(menu.val));
+            if (bu.bvn !== "") {
+              if (
+                Number(menu.val) >= Number(dt.loanAmtFrom) / 100 &&
+                Number(menu.val) <= Number(dt.loanAmtTo) / 100
+              ) {
+                console.log("am here");
 
-              if (bu.bvn !== "") {
-                if (
-                  Number(menu.val) >= Number(dt.loanAmtFrom) / 100 &&
-                  Number(menu.val) <= Number(dt.loanAmtTo) / 100
-                ) {
-                  console.log("am here");
-                  menu.session.get("sel").then(data => {
-                    // console.log(data, 'selected')
-                    choiceIndex = data - 1;
-                    console.log(choiceIndex, "choice");
-                    let tenor = 1; // FIXED TENOR FOR MICRO LOAN JUST FOR SPECTRUM
-                    let mgtPerc = 3; // FIXED management percentage JUST FOR SPECTRUM
-                    let paymentOffer = calcRecurringLoanAmount(
-                      menu.val,
-                      tenor,
-                      dt.interest,
-                      mgtPerc
-                    );
-                    let payload = {
-                      paymentOffer: paymentOffer,
-                      offer: dt,
-                      amount: menu.val * 100,
-                      transaction_desc: "Loan advice for Spectrum",
-                      customer_ref: bu.mobile.substring(1),
-                      firstname: bu.fName,
-                      surname: bu.sName,
-                      email: bu.email,
-                      mobile_no: bu.mobile.substring(1),
-                      scheme: "Spectrum",
-                      xid: bu._id,
-                      userFullname: bu.fName + " " + bu.sName,
-                      userMobile: bu.mobile,
-                      userCode: bu.qrCode,
-                      isOverdue: false,
-                      hasPaid: false,
-                      status: "Pending",
-                      principal: menu.val * 100,
-                      interest: paymentOffer.monthlyRepayments,
-                      duration: tenor,
-                      perc: dt.interest,
-                      dueDate: "",
-                      elapsedSn: "0",
-                      account_name: bu.account_cards[choiceIndex].bank,
-                      account_code:
-                        bu.account_cards[choiceIndex].authorization_code,
-                      account_no: bu.account_cards[choiceIndex].account_no
-                    };
-                    requestloan(payload).then(
-                      res => {
-                        console.log(payload);
-                        console.log(res, "res data");
-                        let text =
-                          "Hi " +
-                          bu.fName +
-                          " " +
-                          bu.sName +
-                          " Your loan request was successfull. Please check your loan status or visit http://spectrum.rubikpay.tech/ for more information. Thank you";
-                        message(text, menu.args.phoneNumber).then(res => {
-                          console.log(res, "message res");
-                          resolve("loan.response");
-                        });
-                      },
-                      err => {
-                        console.log(err);
-                      }
-                    );
-                  });
-                } else {
-                  resolve("loan.req.invalid");
-                }
+                // console.log(data, 'selected')
+                choiceIndex = selectedCardIndex - 1;
+                console.log(choiceIndex, "choice");
+                let tenor = 1; // FIXED TENOR FOR MICRO LOAN JUST FOR SPECTRUM
+                let mgtPerc = 3; // FIXED management percentage JUST FOR SPECTRUM
+                let paymentOffer = calcRecurringLoanAmount(
+                  menu.val,
+                  tenor,
+                  dt.interest,
+                  mgtPerc
+                );
+                let payload = {
+                  paymentOffer: paymentOffer,
+                  offer: dt,
+                  amount: menu.val * 100,
+                  transaction_desc: "Loan advice for Spectrum",
+                  customer_ref: bu.mobile.substring(1),
+                  firstname: bu.fName,
+                  surname: bu.sName,
+                  email: bu.email,
+                  mobile_no: bu.mobile.substring(1),
+                  scheme: "Spectrum",
+                  xid: bu._id,
+                  userFullname: bu.fName + " " + bu.sName,
+                  userMobile: bu.mobile,
+                  userCode: bu.qrCode,
+                  isOverdue: false,
+                  hasPaid: false,
+                  status: "Pending",
+                  principal: menu.val * 100,
+                  interest: paymentOffer.monthlyRepayments,
+                  duration: tenor,
+                  perc: dt.interest,
+                  dueDate: "",
+                  elapsedSn: "0",
+                  account_name: bu.account_cards[choiceIndex].bank,
+                  account_code:
+                    bu.account_cards[choiceIndex].authorization_code,
+                  account_no: bu.account_cards[choiceIndex].account_no
+                };
+                requestloan(payload).then(
+                  res => {
+                    console.log(payload);
+                    console.log(res, "res data");
+                    let text =
+                      "Hi " +
+                      bu.fName +
+                      " " +
+                      bu.sName +
+                      " Your loan request was successfull. Please check your loan status or visit http://spectrum.rubikpay.tech/ for more information. Thank you";
+                    message(text, menu.args.phoneNumber).then(res => {
+                      console.log(res, "message res");
+                      resolve("loan.response");
+                    });
+                  },
+                  err => {
+                    console.log(err);
+                  }
+                );
+
               } else {
-                resolve("loan.bvn.error");
+                resolve("loan.req.invalid");
               }
-            });
+            } else {
+              resolve("loan.bvn.error");
+            }
           });
+
         }
       }
     });

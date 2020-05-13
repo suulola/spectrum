@@ -1,4 +1,4 @@
-const { calOnlineCharge, hotChargeCard } = require('./buddyFuctions');
+const { calOnlineCharge, hotChargeCard, checkIfUserExists } = require('./buddyFuctions');
 
 module.exports = {
 	fundWalletState(menu) {
@@ -6,23 +6,24 @@ module.exports = {
 		let baseUser = '';
 		let authCode = '';
 		menu.state('fundWalletState', {
-			run: () => {
-				menu.session.get('data').then((val) => {
-					console.log(val.account_cards, 'val');
-					if (val.account_cards !== undefined) {
-						baseUser = '';
-						baseUser = val;
-						val.account_cards.map((card, index) => {
-							menu.session.set(card.bank, card.authorization_code);
-							console.log(card.authorization_code, 'authorization code');
-							cardList = [];
-							cardList.push(index + 1 + '.' + card.bank);
-						});
-						menu.con('Please Select Card' + '\n' + cardList.join('\n') + '\n0.Back');
-					} else {
-						menu.con('No card found on this account' + '\n0.Back');
-					}
-				});
+			run: async () => {
+				userData = await checkIfUserExists(menu.args.phoneNumber)
+				userData = userData.data[0]
+				console.log(userData.account_cards)
+				if (userData.account_cards !== undefined) {
+					baseUser = '';
+					baseUser = userData;
+					userData.account_cards.map((card, index) => {
+						menu.session.set(card.bank, card.authorization_code);
+						console.log(card.authorization_code, 'authorization code');
+						cardList = [];
+						cardList.push(index + 1 + '.' + card.bank);
+					});
+					menu.con('Please Select Card' + '\n' + cardList.join('\n') + '\n0.Back');
+				} else {
+					menu.con('No card found on this account' + '\n0.Back');
+				}
+
 			},
 
 			next: {
@@ -78,7 +79,7 @@ module.exports = {
 							}
 						},
 						(err) => {
-							console.log(err);
+							console.log(err, "error");
 						}
 					);
 				});

@@ -52,9 +52,10 @@ module.exports = {
 
   hotChargeCard(amt, authCode, baseUser) {
     let amount = amt * 100;
-    // console.log(amount, 'amount in kobo');
-    // console.log(baseUser, 'baseUSER');
-    // console.log(authCode, 'authCode');
+    console.log(amt, authCode, baseUser, "logged")
+    console.log(amount, 'amount in kobo');
+    console.log(baseUser, 'baseUSER');
+    console.log(authCode, 'authCode');
     return axios.post(`${apiUrl}payments/chargeCardSpectrum`, {
       authorization_code: authCode,
       amount: amount,

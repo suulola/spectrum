@@ -7,7 +7,7 @@ const sessions = {};
 
 module.exports = {
   config(app) {
-    app.post("/", function(req, res) {
+    app.post("/", function (req, res) {
       let args = {
         phoneNumber: req.body.phoneNumber,
         sessionId: req.body.sessionId,
