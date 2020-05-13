@@ -6,6 +6,7 @@ const { loanState } = require('./loan');
 const { welcomeState } = require('./welcome');
 const { fundWalletState } = require('./fundWallet');
 const { payBackLoanState } = require('./payBackLoan');
+const { servicesState } = require('./services')
 const { scheme } = require('./buddyFuctions');
 
 module.exports = {
@@ -41,5 +42,6 @@ module.exports = {
 		loanState(menu);
 		fundWalletState(menu);
 		payBackLoanState(menu);
+		servicesState(menu)
 	}
 };
