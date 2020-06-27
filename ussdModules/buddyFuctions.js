@@ -113,9 +113,10 @@ module.exports = {
   },
 
   message(text, phoneNum) {
-    return axios.post(`${apiUrl}auth/sendSMS/`, {
+    console.log(text, phoneNum, "adadadadada");
+    return axios.post(`http://172.105.84.55:1234/auth/sendSMS/`, {
       to: phoneNum,
-      from: scheme,
+      scheme: scheme,
       text: text
     });
   },
