@@ -20,7 +20,7 @@ module.exports = {
             if (val.data.length < 1) {
               menu.con("Welcome to " + scheme + " \n1. Register \n2. Help");
             } else {
-              menu.con("Welcomes to " + scheme + ", \nPlease enter PIN");
+              menu.con("Welcome's to " + scheme + ", \nPlease enter PIN");
             }
           },
           (err) => {
