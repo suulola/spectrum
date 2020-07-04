@@ -1,5 +1,5 @@
 const axios = require("axios");
-const apiUrl = "http://172.105.84.55:1235/";
+const apiUrl = "http://167.172.100.241:1235/";
 const scheme = "Spectrum";
 
 module.exports = {
