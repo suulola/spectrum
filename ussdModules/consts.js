@@ -1,6 +1,6 @@
 module.exports = {
   scheme: "BiziPay",
-  apiUrl: "http://172.105.84.55:1224/",
+  apiUrl: "http://167.172.100.241:1224/",
   modelBills: {
     phone: String,
     serviceID: String,
