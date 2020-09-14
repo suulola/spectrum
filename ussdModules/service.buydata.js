@@ -4,7 +4,7 @@ const {
   UpdateWallet,
   debitWallet,
   preparePurchase,
-  pager
+  pager,
 } = require("./universalFuctions");
 const { payBill, getVariations } = require("./vtpass");
 const { scheme } = require("./consts");
@@ -25,7 +25,7 @@ module.exports = {
     let varations = [];
     let pagerObj = {
       page: 0,
-      pageSize: 5
+      pageSize: 5,
     };
 
     menu.state("service.data", {
@@ -38,19 +38,19 @@ module.exports = {
       },
       next: {
         "*[1-4]": () => {
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
             selectedNetworkProvideIndex = menu.val - 1;
             getVariations(
               networkProviders[selectedNetworkProvideIndex].value + "-data"
-            ).then(data => {
+            ).then((data) => {
               dataVariation = data.data.content.varations;
               //   console.log(dataVariation.content.varations);
               resolve("service.data.phone");
             });
           });
         },
-        "0": "services"
-      }
+        0: "services",
+      },
     });
 
     menu.state("service.data.phone", {
@@ -62,12 +62,12 @@ module.exports = {
           phone = menu.val;
           return "service.data.package";
         },
-        "0": "services"
-      }
+        0: "services",
+      },
     });
     menu.state("service.data.package", {
       run: () => {
-        // console.log(dataVariation, "data varaition");
+        console.log(dataVariation, "data varaition");
         let joiner = [];
         let dtVariation = [];
         lastPage = Math.round(dataVariation.length / pagerObj.pageSize) - 1;
@@ -87,7 +87,7 @@ module.exports = {
         } else {
           menu.con(
             joiner.join("\n") +
-            `\n${resp.length + 1}. More \n0. Back \n00.MainMenu`
+              `\n${resp.length + 1}. More \n0. Back \n00.MainMenu`
           );
         }
 
@@ -95,7 +95,7 @@ module.exports = {
       },
       next: {
         "*[1-6]": () => {
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
             console.log(resp, "resp");
             let userInput = Number(menu.val);
             if (pagerObj.page !== lastPage) {
@@ -105,7 +105,7 @@ module.exports = {
               } else {
                 console.log(resp[menu.val - 1], "value checked");
                 let index = dataVariation.findIndex(
-                  i => i.name === resp[menu.val]
+                  (i) => i.name === resp[menu.val]
                 );
                 console.log(index);
                 obj = dataVariation[index - 1];
@@ -115,7 +115,7 @@ module.exports = {
             } else {
               console.log(resp[menu.val - 1], "value checked");
               let index = dataVariation.findIndex(
-                i => i.name === resp[menu.val]
+                (i) => i.name === resp[menu.val]
               );
               console.log(index);
               obj = dataVariation[index - 1];
@@ -128,8 +128,8 @@ module.exports = {
             // resolve("services.airtime.confirm");
           });
         },
-        "0": "services"
-      }
+        0: "services",
+      },
     });
 
     menu.state("services.airtime.confirm", {
@@ -139,28 +139,36 @@ module.exports = {
         );
       },
       next: {
-        "1": () => {
-          return new Promise(resolve => {
-            checkIfUserExists(menu.args.phoneNumber).then(data => {
+        1: () => {
+          return new Promise((resolve) => {
+            checkIfUserExists(menu.args.phoneNumber).then( async(data) => {
               bu = data.data[0];
-              console.log(obj, "object");
-              let walletCheck = preparePurchase(
-                bu.wallet,
-                obj.variation_amount
+
+              if (!data.data[0].account) {
+                menu.end("Contact Customer Care for Account Upgrade");
+                return;
+              }
+              let account_number = data.data[0].account.accountNumber;
+
+              let walletCheck = await preparePurchase(
+                account_number,
+                obj.variation_amount * 100
               );
-              //   console.log(walletCheck);
-              if (walletCheck.canProceed) {
+
+              console.log(walletCheck.canProceed)
+
+              if (walletCheck.canProceed === true) {
                 console.log("Processing Airtime");
 
                 let model = {
                   phone: phone,
                   serviceID: `${networkProviders[selectedNetworkProvideIndex].value}-data`,
                   billerCode: phone,
-                  variation_code: obj.variation_code
+                  variation_code: obj.variation_code,
                 };
                 console.log(model);
                 payBill(model)
-                  .then(res => {
+                  .then((res) => {
                     console.log(res, res);
                     if (res.data.Success == "TRANSACTION SUCCESSFUL") {
                       airtimeMes = res.data.Success;
@@ -171,10 +179,10 @@ module.exports = {
                         scheme: scheme,
                         amount: obj.variation_amount,
                         transferType: "airtimeData",
-                        transferProvider: "BiziPay",
+                        transferProvider: "Specqtrum",
                         transferChannel: "ussd",
                         transactionData: {},
-                        source: "Wallet",
+                        source: "Account",
                         destination: "VTPass",
                         narration:
                           networkProviders[selectedNetworkProvideIndex].value +
@@ -188,19 +196,19 @@ module.exports = {
                           fullname: bu.fName + " " + bu.sName,
                           mobile: bu.mobile,
                           qrCode: bu.qrCode,
-                          imageUrl: bu.imageUrl
-                        }
+                          imageUrl: bu.imageUrl,
+                        },
                       };
 
-                      bu["wallet"] = debitWallet(
-                        walletCheck.wallet,
-                        obj.variation_amount * 100
-                      );
+                      // bu["wallet"] = debitWallet(
+                      //   walletCheck.wallet,
+                      //   obj.variation_amount * 100
+                      // );
                       //   bu.wallet.balance = 0;
                       //   bu.wallet.ledger_balance = 0;
                       //   bu.wallet.transaction_funds = 0;
                       //   console.log("Airtime BU: " + JSON.stringify(bu));
-                      UpdateWallet(bu).then(updateRes => {
+                      UpdateWallet(bu).then((updateRes) => {
                         console.log("======================================");
                         console.log(updateRes);
                         // if (updateRes) {
@@ -213,7 +221,7 @@ module.exports = {
                       resolve("service.airtime.mes");
                     }
                   })
-                  .catch(err => {
+                  .catch((err) => {
                     console.log(err);
                     airtimeMes = err.response.data.Failed;
                     resolve("service.airtime.mes");
@@ -225,14 +233,14 @@ module.exports = {
             });
           });
         },
-        "0": ""
-      }
+        0: "",
+      },
     });
 
     menu.state("service.airtime.mes", {
       run: () => {
         menu.end(airtimeMes);
-      }
+      },
     });
-  }
+  },
 };

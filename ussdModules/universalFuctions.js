@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { fetchBalance, debitCBAAccount } = require("./buddyFuctions");
 const apiUrl = "http://167.172.100.241:1235/";
 const scheme = "Spectrum";
 
@@ -12,33 +13,39 @@ module.exports = {
 
   getLoanList() {
     return axios.post(`${apiUrl}loans/getGenericLoans`, {
-      scheme: scheme
+      scheme: scheme,
     });
   },
 
   fundTransfer() {
     return axios.post(`${apiUrl}payments/fundsTransfer`, {
-      payload
-    })
+      payload,
+    });
   },
 
-  fetchBalance(phonenumber) {
-    return new Promise((resolve, reject) => {
-      resolve(phonenumber * 1);
+  // fetchBalance(phonenumber) {
+  //   return new Promise((resolve, reject) => {
+  //     resolve(phonenumber * 1);
+  //   });
+  // },
+
+  fetchBalance(accountNumber) {
+    return axios.post(`${apiUrl}cba/getBalance`, {
+      accountNumber: accountNumber,
     });
   },
 
   checkIfUserExists(phoneNumber) {
     return axios.post(`${apiUrl}users/getUsersByMobile/`, {
       x: phoneNumber,
-      scheme: scheme
+      scheme: scheme,
     });
   },
   verifyPin(pin, phonenumber) {
     return axios.post(`${apiUrl}auth/login`, {
       xMobile: phonenumber,
       xPin: pin,
-      scheme: scheme
+      scheme: scheme,
     });
   },
 
@@ -59,7 +66,7 @@ module.exports = {
     return axios.post(`${apiUrl}payments/payBackSpectrum`, {
       authorization_code: authCode,
       bu: baseUser,
-      loan: loanObj
+      loan: loanObj,
     });
   },
 
@@ -76,14 +83,14 @@ module.exports = {
     return axios.post(`${apiUrl}payments/chargeCardSpectrum`, {
       authorization_code: authCode,
       amount: amount,
-      bu: baseUser
+      bu: baseUser,
     });
   },
 
   getLoanBalance(userId) {
     return axios.post(`${apiUrl}loans/getLoansByUserId/`, {
       xid: userId,
-      scheme: scheme
+      scheme: scheme,
     });
   },
 
@@ -102,27 +109,36 @@ module.exports = {
 
   UpdateWallet(model) {
     console.log(JSON.stringify(model), "bu");
-    let apiURL = `${apiUrl}wallets/updateWallet/`;
+    let apiURL = `${apiUrl}cba/updateTransaction`;
     return axios.post(apiURL, model);
   },
 
-  preparePurchase(wallet, amount) {
+  async preparePurchase(accountNumber, amount) {
     let model = {
       canProceed: false,
       reason: "",
-      wallet: wallet
     };
-    if (amount > wallet.ledger_balance) {
+
+    const account_balance = await fetchBalance(accountNumber);
+    console.log(account_balance.data.data.Balance);
+
+    if (amount / 100 > account_balance.data.data.Balance) {
+      console.log("cannot proceed");
       model.canProceed = false;
       model.reason = "Insufficient Balance";
     } else {
-      model.canProceed = true;
-      model.reason = "Sufficient Balance";
-      wallet.ledger_balance = wallet.ledger_balance - amount;
-      wallet.transaction_funds = wallet.transaction_funds * 1 + amount;
-      wallet.isLocked = false;
-      model.wallet = wallet;
+      console.log("proceed");
+      const debitUser = await debitCBAAccount(accountNumber, 100);
+      console.log(debitUser, "**********");
+      if (debitUser.data.status === true) {
+        model.canProceed = true;
+        model.reason = "Sufficient Balance";
+      } else {
+        model.canProceed = false;
+        model.reason = "Could not debit user account";
+      }
     }
+    console.log(model);
     return model;
   },
 
@@ -130,7 +146,7 @@ module.exports = {
     return axios.post(`${apiUrl}auth/sendSMS/`, {
       to: phoneNum,
       from: scheme,
-      text: text
+      text: text,
     });
   },
 
@@ -187,5 +203,5 @@ module.exports = {
       repaymentSchedule.push(obj);
     }
     return loanOffer;
-  }
+  },
 };

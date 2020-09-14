@@ -9,15 +9,15 @@ const {
   hotChargeCard,
   verifyBVN,
   updateBVN,
-  checkIfUserExists
+  checkIfUserExists,
 } = require("./buddyFuctions");
 
 module.exports = {
   loanState(menu) {
     let payBackAmt = Number;
     let dt;
-    let loanData
-    let selectedCardIndex
+    let loanData;
+    let selectedCardIndex;
     let cardList = [];
     let cardAuth = [];
     let cards = [];
@@ -34,49 +34,50 @@ module.exports = {
         );
       },
       next: {
-        "1": () => {
-          return new Promise(resolve => {
+        1: () => {
+          return new Promise((resolve) => {
             getLoanList().then(
               async (data) => {
-                userData = await checkIfUserExists(menu.args.phoneNumber)
-                userData = userData.data[0]
-                loanData = data.data
+                userData = await checkIfUserExists(menu.args.phoneNumber);
+                userData = userData.data[0];
+                console.log(userData);
+                loanData = data.data;
                 resolve("loan.list");
               },
-              err => {
+              (err) => {
                 console.log(err);
               }
             );
           });
         },
-        "2": "loan.payBack",
-        "3": "loan.status",
-        "4": "loan.balance",
-        "0": "welcomeState"
-      }
+        2: "loan.payBack",
+        3: "loan.status",
+        4: "loan.balance",
+        0: "welcomeState",
+      },
     });
 
     menu.state("loan.status", {
       run: () => {
-        menu.session.get("data").then(data => {
-          getLoanBalance(data._id).then(value => {
+        menu.session.get("data").then((data) => {
+          getLoanBalance(data._id).then((value) => {
             if (value.data.length !== 0) {
-              value.data.forEach(val => {
+              value.data.forEach((val) => {
                 // console.log(val);
                 let details;
-                val.details.forEach(detail => (details = detail));
+                val.details.forEach((detail) => (details = detail));
 
                 menu.con(
                   "Details \n" +
-                  "status: " +
-                  val.status +
-                  "\nAmount: " +
-                  Number(details.principal) / 100 +
-                  "\nAmount with interest:" +
-                  Number(details.interest) / 100 +
-                  "\nDuration:" +
-                  details.duration +
-                  "\n0.Back"
+                    "status: " +
+                    val.status +
+                    "\nAmount: " +
+                    Number(details.principal) / 100 +
+                    "\nAmount with interest:" +
+                    Number(details.interest) / 100 +
+                    "\nDuration:" +
+                    details.duration +
+                    "\n0.Back"
                 );
               });
             } else {
@@ -86,34 +87,34 @@ module.exports = {
         });
       },
       next: {
-        "0": "loan",
-        "1": "loan.list"
-      }
+        0: "loan",
+        1: "loan.list",
+      },
     });
 
     menu.state("loan.balance", {
       run: () => {
-        menu.session.get("data").then(data => {
-          getLoanBalance(data._id).then(value => {
+        menu.session.get("data").then((data) => {
+          getLoanBalance(data._id).then((value) => {
             console.log(value.data, "val");
             if (value.data.length === 0) {
               menu.con(`You don't have a registered loan \n0.Back`);
             } else {
-              value.data.forEach(val => {
+              value.data.forEach((val) => {
                 let details;
-                val.details.forEach(detail => (details = detail));
+                val.details.forEach((detail) => (details = detail));
                 if (val.status === "Disbursed") {
                   menu.con(
                     "Details: \n" +
-                    "Amount:" +
-                    Number(details.interest) / 100 +
-                    "\nDuration:" +
-                    Number(details.duration) / 100 +
-                    "\n Due-Date:" +
-                    details.dueDate +
-                    "\nElapsed by:" +
-                    details.elapsedSn +
-                    "\n0.Back"
+                      "Amount:" +
+                      Number(details.interest) / 100 +
+                      "\nDuration:" +
+                      Number(details.duration) / 100 +
+                      "\n Due-Date:" +
+                      details.dueDate +
+                      "\nElapsed by:" +
+                      details.elapsedSn +
+                      "\n0.Back"
                   );
                 } else {
                   menu.con(
@@ -126,15 +127,15 @@ module.exports = {
         });
       },
       next: {
-        "0": "loan",
-        "1": "loan.status"
-      }
+        0: "loan",
+        1: "loan.status",
+      },
     });
 
     menu.state("loan.payBack", {
       run: () => {
-        menu.session.get("data").then(data => {
-          getLoanBalance(data._id).then(value => {
+        menu.session.get("data").then((data) => {
+          getLoanBalance(data._id).then((value) => {
             if (value.data.length !== 0) {
               loanObj = value.data[0];
               if (loanObj._id) {
@@ -176,10 +177,10 @@ module.exports = {
         });
       },
       next: {
-        "1": "loan.payment.selectCard",
-        "2": "loan.status",
-        "0": "loan"
-      }
+        1: "loan.payment.selectCard",
+        2: "loan.status",
+        0: "loan",
+      },
     });
 
     // menu.state('loan.payBack', {
@@ -211,7 +212,7 @@ module.exports = {
     menu.state("loan.payment.selectCard", {
       run: () => {
         cardAuth = [];
-        menu.session.get("data").then(val => {
+        menu.session.get("data").then((val) => {
           cardList = [];
           baseUser = "";
           baseUser = val;
@@ -219,7 +220,7 @@ module.exports = {
             console.log(card, "authbank");
             cardAuth.push({
               cardName: card.bank,
-              authCode: card.authorization_code
+              authCode: card.authorization_code,
             });
 
             cardList.push(index + 1 + "." + card.bank);
@@ -235,7 +236,7 @@ module.exports = {
 
       next: {
         "*[1-9]": () => {
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
             menu.session.set("choice", Number(menu.val) - 1);
             // authCode = '';
             // console.log(cardList, 'cardlist');
@@ -248,8 +249,8 @@ module.exports = {
             resolve("loan.payment.confirm");
           });
         },
-        "0": "loan.payBack"
-      }
+        0: "loan.payBack",
+      },
     });
     menu.state("loan.payment.confirm", {
       run: () => {
@@ -257,27 +258,27 @@ module.exports = {
         // console.log(totalAmount, 'totalAmount');
         menu.con(
           "Note: N" +
-          totalAmount +
-          " will be removed from your account\n" +
-          "\n1.Proceed\n0.Back"
+            totalAmount +
+            " will be removed from your account\n" +
+            "\n1.Proceed\n0.Back"
         );
       },
       next: {
-        "1": "loan.chargeCardState",
-        "0": "loan.payment.selectCard"
-      }
+        1: "loan.chargeCardState",
+        0: "loan.payment.selectCard",
+      },
     });
 
     menu.state("loan.chargeCardState", {
       run: () => {
         // console.log(cardAuth, 'cardAuth');
-        menu.session.get("choice").then(choice => {
+        menu.session.get("choice").then((choice) => {
           // console.log(choice, 'choice');
           let card = cardAuth[choice];
           // console.log(card, card.cardName, card.authCode);
           // loanObj.details[0].interest = 1000;
           hotPayBackLoan(card.authCode, baseUser, loanObj).then(
-            data => {
+            (data) => {
               console.log(data.messages);
 
               // console.log(data, 'successful message');
@@ -288,15 +289,15 @@ module.exports = {
               menu.end("Your Loan has successfully been paid. Thank you");
               // }
             },
-            err => {
+            (err) => {
               console.log(err);
             }
           );
         });
       },
       next: {
-        "0": "welcomeState"
-      }
+        0: "welcomeState",
+      },
     });
 
     menu.state("loan.list", {
@@ -304,7 +305,7 @@ module.exports = {
         let loanList = [];
 
         loanData.map((loans, index) => {
-          if (loans.title === "MICRO LOAN") {
+          if (loans.title === "NANO LOAN") {
             console.log("found");
             loanindex = index;
             loanList.push(1 + ". " + loans.title);
@@ -312,46 +313,43 @@ module.exports = {
         });
         menu.con(
           "Please select a loan type" +
-          "\n" +
-          loanList.join("\n") +
-          "\n0. Back "
+            "\n" +
+            loanList.join("\n") +
+            "\n0. Back "
         );
-
       },
       next: {
-        "1": "loan.confirm",
-        "0": "loan"
-      }
+        1: "loan.confirm",
+        0: "loan",
+      },
     });
 
     menu.state("loan.confirm", {
       run: () => {
-
         dt = loanData[loanindex];
-        console.log(dt, "first love")
+        console.log(dt, "first love");
         menu.con(
           "Loan Description \n" +
-          dt.title +
-          " LOAN" +
-          "\nAmount: " +
-          "N" +
-          Number(dt.loanAmtFrom) / 100 +
-          " to " +
-          "N" +
-          Number(dt.loanAmtTo) / 100 +
-          "\nDuration: 1 month" +
-          "\nInterest: " +
-          dt.interest +
-          "%" +
-          "\nPress 1 to continue" +
-          " OR 0 to go Back"
+            dt.title +
+            " LOAN" +
+            "\nAmount: " +
+            "N" +
+            Number(dt.loanAmtFrom) / 100 +
+            " to " +
+            "N" +
+            Number(dt.loanAmtTo) / 100 +
+            "\nDuration: 1 month" +
+            "\nInterest: " +
+            dt.interest +
+            "%" +
+            "\nPress 1 to continue" +
+            " OR 0 to go Back"
         );
-
       },
       next: {
-        "0": "loan.list",
-        "1": "loan.accSelect"
-      }
+        0: "loan.list",
+        1: "loan.accSelect",
+      },
     });
 
     menu.state("loan.updateBVN", {
@@ -360,16 +358,15 @@ module.exports = {
       },
       next: {
         "*[0-9]": () => {
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
+            menu.session.get("data").then((data) => {
+              console.log(data, "data");
 
-            menu.session.get("data").then(data => {
-              console.log(data, "data")
-
-              verifyBVN(menu.val, data.fName, data.sName).then(res => {
+              verifyBVN(menu.val, data.fName, data.sName).then((res) => {
                 console.log(res, "bvn response");
                 data["bvn"] = menu.val;
                 if (res === true) {
-                  updateBVN(data).then(res => {
+                  updateBVN(data).then((res) => {
                     console.log(res, "update response");
                     resolve("loan.bvn.updated");
                   });
@@ -381,24 +378,24 @@ module.exports = {
               });
             });
           });
-        }
-      }
+        },
+      },
     });
 
     menu.state("loan.bvn.updated", {
       run: () => {
         menu.end("BVN UPDATED SUCCESSFULLY");
-      }
+      },
     });
 
     menu.state("loan.accSelect", {
       run: () => {
-
-        console.log(userData.account_cards[0], "user data retrieved from")
+        console.log(userData.account_cards[0], "user data retrieved from");
         if (userData.bvn === "") {
           menu.con("BVN field cannot be empty. \nPress 1. To update BVN");
         } else if (userData.account_cards[0] === undefined) {
-          console.log(userData.account_cards[0], "account cards")
+          menu.end("Kindly add a card to proceed");
+          console.log(userData.account_cards[0], "account cards");
           // text =
           //   "No account found, Please visit http://spectrum.rubikpay.tech/ to add an account.";
           // message(text, menu.args.phoneNumber).then(val => {
@@ -413,7 +410,7 @@ module.exports = {
             cards.push({
               cardName: card.bank,
               accNo: card.account_no,
-              authCode: card.authorization_code
+              authCode: card.authorization_code,
             });
             cardList.push(index + 1 + "." + card.bank);
           });
@@ -431,33 +428,33 @@ module.exports = {
         // "0": "loan.confirm",
         // "1": "loan.updateBVN",
         "*[0-9]": () => {
-          return new Promise(resolve => {
-            selectedCardIndex = menu.val
+          return new Promise((resolve) => {
+            selectedCardIndex = menu.val;
 
             resolve("loan.amount");
           });
-        }
-      }
+        },
+      },
     });
 
     menu.state("loan.amount", {
       run: () => {
-        console.log(dt, "date")
+        console.log(dt, "date");
         menu.con(
           "Please enter amount between \n" +
-          "N" +
-          Number(dt.loanAmtFrom) / 100 +
-          " to " +
-          "N" +
-          Number(dt.loanAmtTo) / 100
+            "N" +
+            Number(dt.loanAmtFrom) / 100 +
+            " to " +
+            "N" +
+            Number(dt.loanAmtTo) / 100
         );
       },
       next: {
         "*[1-9]": () => {
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
             // resolve('loan.req.invalid');
             let choiceIndex = "";
-            let bu = userData
+            let bu = userData;
             // console.log(cardAuth[0].cardName, 'account cards')
             console.log(Number(menu.val));
             if (bu.bvn !== "") {
@@ -505,10 +502,10 @@ module.exports = {
                   account_name: bu.account_cards[choiceIndex].bank,
                   account_code:
                     bu.account_cards[choiceIndex].authorization_code,
-                  account_no: bu.account_cards[choiceIndex].account_no
+                  account_no: bu.account_cards[choiceIndex].account_no,
                 };
                 requestloan(payload).then(
-                  res => {
+                  (res) => {
                     console.log(payload);
                     console.log(res, "res data");
                     let text =
@@ -516,17 +513,16 @@ module.exports = {
                       bu.fName +
                       " " +
                       bu.sName +
-                      " Your loan request was successfull. Please check your loan status or visit http://spectrum.rubikpay.tech/ for more information. Thank you";
-                    message(text, menu.args.phoneNumber).then(res => {
+                      " Your loan request was successful. Please check your loan status or visit http://spectrumpay.com.ng/ for more information. Thank you";
+                    message(text, menu.args.phoneNumber).then((res) => {
                       console.log(res, "message res");
-                      resolve("loan.response");
                     });
+                    resolve("loan.response");
                   },
-                  err => {
+                  (err) => {
                     console.log(err);
                   }
                 );
-
               } else {
                 resolve("loan.req.invalid");
               }
@@ -534,18 +530,17 @@ module.exports = {
               resolve("loan.bvn.error");
             }
           });
-
-        }
-      }
+        },
+      },
     });
 
     menu.state("loan.bvn.error", {
       run: () => {
         text =
-          "Please update your BVN on our website http://spectrum.rubikpay.tech/";
+          "Please update your BVN on our website http://spectrumpay.com.ng/";
         menu.end(text);
         message(text, menu.args.phoneNumber);
-      }
+      },
     });
 
     menu.state("loan.req.invalid", {
@@ -555,18 +550,18 @@ module.exports = {
         );
       },
       next: {
-        "1": "loan.amount",
-        "0": "loan"
-      }
+        1: "loan.amount",
+        0: "loan",
+      },
     });
 
     menu.state("loan.response", {
       run: () => {
         // requestloan()
         let text =
-          "Your loan request was successfull. Please check your loan status or visit http://spectrum.rubikpay.tech/ for more information. Thank you";
+          "Your loan request was successful. Please check your loan status or visit http://spectrumpay.com.ng/ for more information. Thank you";
         menu.end(text);
-      }
+      },
     });
-  }
+  },
 };

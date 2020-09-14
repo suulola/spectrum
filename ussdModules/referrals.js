@@ -4,12 +4,13 @@ module.exports = {
   referalState(menu) {
     menu.state("referal", {
       run: () => {
-        menu.con(`Refer a friend \n Enter your friends number:`);
+        menu.con(`Refer a friend \n Enter your friend\'s number:`);
       },
       next: {
         "*[0-9]": () => {
           return new Promise((resolve, reject) => {
-            menu.session.get("data").then(val => {
+            menu.session.get("data").then((val) => {
+              // console.log(val, "***************");
               let text =
                 "Your friend " +
                 val.fName +
@@ -17,30 +18,34 @@ module.exports = {
                 val.sName +
                 " has invited you to use " +
                 scheme +
-                ".\nPlease visit http://spectrum.rubikpay.tech/ and start earning!!\nRegards, The " +
+                ".\nPlease visit http://spectrumpay.com.ng/ and start earning!!\n" +
+                "Use 0" +
+                val.mobile.slice(4) +
+                "  as your referral code. \n" +
+                "Regards, The " +
                 scheme +
                 " Team";
               let phoneNumber = "+234" + menu.val.substring(1);
               message(text, phoneNumber)
-                .then(res => {
+                .then((res) => {
                   resolve("referal.status");
                 })
-                .catch(err => {
+                .catch((err) => {
                   console.log(err, "err");
                 });
             });
           });
         },
-        "0": "welcome"
-      }
+        0: "welcome",
+      },
     });
     menu.state("referal.status", {
       run: () => {
         menu.con("Sent. Thank you \n Press 0 to go back");
       },
       Next: {
-        "0": "welcome"
-      }
+        0: "welcome",
+      },
     });
 
     menu.state("referal.error", {
@@ -48,8 +53,8 @@ module.exports = {
         menu.con("error!!!, Please check input \n Press 0 to go back");
       },
       Next: {
-        "0": "welcome"
-      }
+        0: "welcome",
+      },
     });
-  }
+  },
 };

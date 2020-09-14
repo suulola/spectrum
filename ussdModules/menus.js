@@ -20,7 +20,12 @@ module.exports = {
             if (val.data.length < 1) {
               menu.con("Welcome to " + scheme + " \n1. Register \n2. Help");
             } else {
+              // if (val.data[0].account) {
               menu.con("Welcome's to " + scheme + ", \nPlease enter PIN");
+              // }
+              // else {
+              //   menu.con("Contact Customer Care for Account Upgrade");
+              // }
             }
           },
           (err) => {
@@ -32,8 +37,8 @@ module.exports = {
         );
       },
       next: {
-        "1": "reg",
-        "2": "help",
+        1: "reg",
+        2: "help",
         "*[0-9]": "welcomeState",
       },
     });

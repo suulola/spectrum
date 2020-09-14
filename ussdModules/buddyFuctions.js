@@ -1,6 +1,7 @@
 const axios = require("axios");
 
 const apiUrl = "http://167.172.100.241:1235/";
+// const apiUrl = "http://localhost:1235/";
 const scheme = "Spectrum";
 
 module.exports = {
@@ -12,25 +13,47 @@ module.exports = {
   },
   getLoanList() {
     return axios.post(`${apiUrl}loans/getGenericLoans`, {
-      scheme: scheme
+      scheme: scheme,
     });
   },
-  fetchBalance(phonenumber) {
-    return new Promise((resolve, reject) => {
-      resolve(phonenumber * 1);
+  // fetchBalance(phonenumber) {
+  //   return new Promise((resolve, reject) => {
+  //     resolve(phonenumber * 1);
+  //   });
+  // },
+  fetchBalance(accountNumber) {
+    return axios.post(`${apiUrl}cba/getBalance`, {
+      accountNumber: accountNumber,
     });
   },
   checkIfUserExists(phoneNumber) {
     return axios.post(`${apiUrl}users/getUsersByMobile/`, {
       x: phoneNumber,
-      scheme: scheme
+      scheme: scheme,
+    });
+  },
+  debitCBAAccount(accountNumber, amount) {
+    let debitModel = {
+      accountNumber: accountNumber,
+      amount: amount,
+      narration: JSON.stringify({
+        narration: `Bill payment of N${amount / 100}`,
+        action: "Bills",
+      }),
+    };
+    return axios.post(`${apiUrl}cba/debitAccount`, debitModel);
+  },
+  checkIfUserHasPendingLoan(phoneNumber) {
+    return axios.post(`${apiUrl}users/getUsersByMobile/`, {
+      x: phoneNumber,
+      scheme: scheme,
     });
   },
   verifyPin(pin, phonenumber) {
     return axios.post(`${apiUrl}auth/login`, {
       xMobile: phonenumber,
       xPin: pin,
-      scheme: scheme
+      scheme: scheme,
     });
   },
 
@@ -46,21 +69,39 @@ module.exports = {
     return axios.post(`${apiUrl}payments/payBackSpectrum`, {
       authorization_code: authCode,
       bu: baseUser,
-      loan: loanObj
+      loan: loanObj,
     });
   },
 
   hotChargeCard(amt, authCode, baseUser) {
     let amount = amt * 100;
-    console.log(amt, authCode, baseUser, "logged")
-    console.log(amount, 'amount in kobo');
-    console.log(baseUser, 'baseUSER');
-    console.log(authCode, 'authCode');
+    console.log(amt, authCode, baseUser, "logged");
+    console.log(amount, "amount in kobo");
+    console.log(baseUser, "baseUSER");
+    console.log(authCode, "authCode");
     return axios.post(`${apiUrl}payments/chargeCardSpectrum`, {
       authorization_code: authCode,
       amount: amount,
-      bu: baseUser
+      bu: baseUser,
     });
+  },
+
+  fundAccount(amt, authCode, baseUser, bankDetail) {
+    const creditModel = {
+      bankDetail: {
+        bankCode: bankDetail.bank_code,
+        authorization_code: authCode,
+        bankAccountNumber: bankDetail.account_no,
+      },
+      phoneNumber: baseUser.mobile,
+      email: baseUser.email,
+      accountNumber: baseUser.account.accountNumber,
+
+      amount: amt * 100,
+    };
+    console.log(amt, authCode, baseUser, "logged");
+    console.log(creditModel, "credit model");
+    return axios.post(`${apiUrl}cba/ussd/fundAccount`, creditModel);
   },
 
   getLoanBalance(userId) {
@@ -68,7 +109,7 @@ module.exports = {
     // console.log(userId, 'userid used');
     return axios.post(`${apiUrl}loans/getLoansByUserId/`, {
       xid: userId,
-      scheme: scheme
+      scheme: scheme,
     });
   },
 
@@ -82,7 +123,7 @@ module.exports = {
 
   async verifyBVN(bvn, fName, sName) {
     const response = await axios.post(`${apiUrl}payments/resolvebvn`, {
-      x: bvn
+      x: bvn,
     });
     if (
       response.data.data.first_name === fName.toUpperCase() &&
@@ -114,21 +155,24 @@ module.exports = {
 
   message(text, phoneNum) {
     console.log(text, phoneNum, "adadadadada");
-    return axios.post(`http://167.172.100.241:1234/auth/sendSMS/`, {
+    return axios.post(`${apiUrl}auth/sendSMS/`, {
       to: phoneNum,
-      scheme: scheme,
-      text: text
+      from: scheme,
+      text: text,
     });
   },
 
   registerUser(regObj, phoneNumber) {
-    // return console.log(regObj.fName, regObj.sName, regObj.pin1, regObj.gender, phoneNumber, 'regObj');
+    // return console.log(regObj, phoneNumber, 'regObj');
     return axios.post(`${apiUrl}users/register_user`, {
       fName: regObj.fName,
+      mName: regObj.mName,
       sName: regObj.sName,
+      address: regObj.address,
+      dob: regObj.dob,
       xMobile: phoneNumber,
       channel: "ussd",
-      email: "",
+      email: regObj.email,
       bvn: "",
       sex: regObj.gender,
       imgUrl: "",
@@ -136,7 +180,7 @@ module.exports = {
       xPin: regObj.pin1,
       createdBy: "self",
       referralCode: "",
-      scheme: "Spectrum"
+      scheme: "Spectrum",
     });
   },
 
@@ -186,5 +230,5 @@ module.exports = {
     }
     // console.log('loanOffer: '+JSON.stringify(loanOffer));
     return loanOffer;
-  }
+  },
 };

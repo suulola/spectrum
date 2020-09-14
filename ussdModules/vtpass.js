@@ -4,7 +4,7 @@ const axios = require("axios");
 module.exports = {
   catchva: "",
   async getVariations(serviceID) {
-    // console.log(serviceID);
+    console.log(serviceID, "{{1234}}");
     let apiURL = `${apiUrl}vtpass/tv/get-variation-code?serviceID=${serviceID}`;
     return axios.get(apiURL);
   },
@@ -22,7 +22,7 @@ module.exports = {
     return axios.post(apiURL, model);
   },
   getVariationsTest(serviceID) {
-    console.log(serviceID);
+   
     let apiURL = `${apiUrl}vtpass/tv/get-variation-code_test?serviceID=${serviceID}`;
     return axios.get(apiUrl);
   },

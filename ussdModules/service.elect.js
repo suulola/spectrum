@@ -2,7 +2,7 @@ const {
   checkIfUserExists,
   preparePurchase,
   debitWallet,
-  UpdateWallet
+  UpdateWallet,
 } = require("./universalFuctions");
 const { ElecVendorSelect, ltElecPackageSelect, scheme } = require("./consts");
 const { verifyElectricMeter, payBill } = require("./vtpass");
@@ -24,7 +24,7 @@ module.exports = {
       serviceID: "",
       amount: "",
       variation_code: "",
-      billersCode: ""
+      billersCode: "",
     };
 
     menu.state("services.bills.elect", {
@@ -36,14 +36,14 @@ module.exports = {
       },
       next: {
         "*[1-9]": () => {
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
             console.log(Number(menu.val) - 1);
             selectedVendorIndex = Number(menu.val) - 1;
             resolve("services.bills.getMeterNumber");
           });
         },
-        "0": "services.bills"
-      }
+        0: "services.bills",
+      },
     });
 
     menu.state("services.bills.getMeterNumber", {
@@ -52,14 +52,14 @@ module.exports = {
       },
       next: {
         "*[1-9]": () => {
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
             // GET AND STORE THE ENTERED METER NUMBER
             meterNumber = menu.val;
             resolve("services.bills.getAmount");
           });
         },
-        "0": "services"
-      }
+        0: "services",
+      },
     });
 
     menu.state("services.bills.getAmount", {
@@ -68,13 +68,13 @@ module.exports = {
       },
       next: {
         "*[1-9]": () => {
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
             amount = menu.val;
             resolve("services.bills.getElecPackage");
           });
         },
-        "0": "services"
-      }
+        0: "services",
+      },
     });
 
     menu.state("services.bills.getElecPackage", {
@@ -87,7 +87,7 @@ module.exports = {
       },
       next: {
         "*[1-2]": () => {
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
             selectedPackageIndex = menu.val - 1;
             console.log(ltElecPackageSelect[selectedPackageIndex]);
             console.log(ElecVendorSelect[selectedVendorIndex]);
@@ -96,11 +96,11 @@ module.exports = {
               serviceID: ElecVendorSelect[selectedVendorIndex].value,
               amount: amount,
               variation_code: ltElecPackageSelect[selectedPackageIndex].value,
-              billersCode: meterNumber
+              billersCode: meterNumber,
             };
             console.log(modelElecBills, "BILL MODELS");
             verifyElectricMeter(modelElecBills)
-              .then(res => {
+              .then((res) => {
                 customersDetails = res.data.Success.content;
                 if (res.data.Success.code === "000") {
                   resolve("services.bills.elecConfirm");
@@ -109,15 +109,15 @@ module.exports = {
                   resolve("service.bills.elec.error");
                 }
               })
-              .catch(err => {
+              .catch((err) => {
                 console.log(err, " Error logged");
                 errMessage = err.response.data.error;
                 // resolve("services.bills.elecConfirm");
                 resolve("service.bills.elec.error");
               });
           });
-        }
-      }
+        },
+      },
     });
 
     menu.state("services.bills.elecConfirm", {
@@ -126,29 +126,35 @@ module.exports = {
           `Provider: ${ElecVendorSelect[
             selectedVendorIndex
           ].name.toUpperCase()} \nType: ${
-          ltElecPackageSelect[selectedPackageIndex].name
+            ltElecPackageSelect[selectedPackageIndex].name
           } \nAmount: ${amount} \n1.Proceed 0.Back`
         );
       },
       next: {
-        "1": () => {
-          return new Promise(resolve => {
-            checkIfUserExists(menu.args.phoneNumber).then(val => {
+        1: () => {
+          return new Promise((resolve) => {
+            checkIfUserExists(menu.args.phoneNumber).then((val) => {
               bu = val.data[0];
-              console.log(JSON.stringify(bu), "user data");
-              let walletCheck = preparePurchase(bu.wallet, amount);
+
+              if (!data.data[0].account) {
+                menu.end("Contact Customer Care for Account Upgrade");
+                return;
+              }
+              let account_number = data.data[0].account.accountNumber;
+
+              let walletCheck = preparePurchase(account_number, amount * 100);
               if (walletCheck.canProceed) {
                 payBill(modelElecBills)
-                  .then(val => {
+                  .then((val) => {
                     console.log(val, "response from test payment");
                     bu["transaction"] = {
                       scheme: scheme,
                       amount: amount,
                       transferType: "phcn",
-                      transferProvider: "BiziPay",
+                      transferProvider: "Spectrum",
                       transferChannel: "ussd",
                       transactionData: {},
-                      source: "Wallet",
+                      source: "Account",
                       destination: "VTPass",
                       narration:
                         "'" +
@@ -164,22 +170,18 @@ module.exports = {
                         fullname: bu.fName + " " + bu.sName,
                         mobile: bu.mobile,
                         qrCode: bu.qrCode,
-                        imageUrl: bu.imageUrl
-                      }
+                        imageUrl: bu.imageUrl,
+                      },
                     };
-                    bu["wallet"] = debitWallet(
-                      walletCheck.wallet,
-                      amount * 100
-                    );
 
-                    UpdateWallet(bu).then(updateRes => {
+                    UpdateWallet(bu).then((updateRes) => {
                       console.log("======================================");
                       console.log(updateRes);
 
                       resolve("service.bill.cableSuccess");
                     });
                   })
-                  .catch(err => {
+                  .catch((err) => {
                     errMessage = err.response.data.Failed;
                     console.log(err, "error from response");
                     resolve("service.bills.elec.error");
@@ -213,15 +215,15 @@ module.exports = {
               // }
             });
           });
-        }
-      }
+        },
+      },
     });
 
     menu.state("service.bills.elec.error", {
       run: () => {
         console.log(errMessage);
         menu.end(errMessage);
-      }
+      },
     });
-  }
+  },
 };
