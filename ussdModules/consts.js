@@ -13,7 +13,7 @@ module.exports = {
     { name: "Glo", value: "Glo" },
     { name: "Mtn", value: "Mtn" },
     { name: "Airtel", value: "Airtel" },
-    { name: "Etisalat", value: "etisalat" }
+    { name: "Etisalat", value: "Etisalat" }
   ],
   modelTv: {
     phone: String,
