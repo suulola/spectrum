@@ -1,22 +1,29 @@
+const { fetchBalance } = require("./buddyFuctions");
+
 module.exports = {
-	checkBalanceState(menu) {
-		menu.state('checkBalance', {
-			run: () => {
-				menu.session.get('data').then((val) => {
-					// console.log(val.wallet.balance);
-					menu.con(
-						`Your Balance is: N` +
-							val.wallet.balance / 100 +
-							'\n' +
-							'Ledger Balance is : N' +
-							val.wallet.ledger_balance / 100 +
-							'\n0. Back'
-					);
-				});
-			},
-			next: {
-				'0': 'welcomeState'
-			}
-		});
-	}
+  checkBalanceState(menu) {
+    menu.state("checkBalance", {
+      run: () => {
+        menu.session.get("accountNumber").then(async (acc) => {
+          if (!acc) {
+            menu.end("Contact Customer Care for Account Upgrade");
+            return;
+          }
+          console.log("accc", acc);
+          let bal = await fetchBalance(acc);
+          console.log("*******", bal);
+          if (bal.data.status === true) {
+            menu.con(
+              `Your Account Balance is: N` + bal.data.data.Balance + "\n0. Back"
+            );
+          } else {
+            menu.end("Please try again later");
+          }
+        });
+      },
+      next: {
+        0: "welcomeState",
+      },
+    });
+  },
 };

@@ -53,7 +53,7 @@ return new Promise((resolve) => {
                             bu.fName +
                             ' ' +
                             bu.sName +
-                            ' Your loan request was successfull. Please check your loan status or visit http://spectrum.rubikpay.tech/ for more information. Thank you';
+                            ' Your loan request was successfull. Please check your loan status or visit http://spectrumpay.com.ng/ for more information. Thank you';
                         message(text, menu.args.phoneNumber).then((res) => {
                             console.log(res, 'message res');
                             resolve('loan.response');

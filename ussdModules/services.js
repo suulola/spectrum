@@ -8,15 +8,13 @@ module.exports = {
     let selectBill = [];
     menu.state("services", {
       run: () => {
-        menu.con(
-          "Please select an option \n1.Pay Bills \n2.Send Money \n0.Back"
-        );
+        menu.con("Please select an option \n1.Pay Bills  \n0.Back");
       },
       next: {
-        "1": "services.bills",
-        "2": "transfer",
-        "0": "welcomeState"
-      }
+        1: "services.bills",
+        // "2": "transfer",
+        0: "welcomeState",
+      },
     });
 
     menu.state("services.bills", {
@@ -34,7 +32,7 @@ module.exports = {
       },
       next: {
         "*[1-2]": () => {
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
             if (Number(menu.val) === 1) {
               selectedBillType = menu.val;
               resolve("services.bills.cable");
@@ -44,14 +42,18 @@ module.exports = {
             }
           });
         },
-        "3": "service.airtime",
-        "4": "service.data",
-        "0": "services"
-      }
+        3: "service.airtime",
+        4: "service.data",
+        0: "services",
+      },
     });
+
+    // menu.state("transfer", {
+    //   run: () => {}
+    // })
     serviceCableState(menu);
     electServiceState(menu);
     serviceAirtimeState(menu);
     serviceDataState(menu);
-  }
+  },
 };
