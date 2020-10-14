@@ -16,15 +16,14 @@ module.exports = {
                 val.fName +
                 " " +
                 val.sName +
-                " has invited you to use " +
-                scheme +
+                " has invited you to use SpectrumMFB" +
                 ".\nPlease visit http://spectrumpay.com.ng/ and start earning!!\n" +
                 "Use 0" +
                 val.mobile.slice(4) +
                 "  as your referral code. \n" +
-                "Regards, The " +
-                scheme +
-                " Team";
+                "Regards, The SpectrumMFB Team";
+
+                
               let phoneNumber = "+234" + menu.val.substring(1);
               message(text, phoneNumber)
                 .then((res) => {
@@ -32,6 +31,7 @@ module.exports = {
                 })
                 .catch((err) => {
                   console.log(err, "err");
+                  resolve("referal.error");
                 });
             });
           });
@@ -50,7 +50,7 @@ module.exports = {
 
     menu.state("referal.error", {
       run: () => {
-        menu.con("error!!!, Please check input \n Press 0 to go back");
+        menu.con("Error!!!, Please check input \n Press 0 to go back");
       },
       Next: {
         0: "welcome",

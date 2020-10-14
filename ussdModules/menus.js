@@ -16,13 +16,12 @@ module.exports = {
         // console.log(menu.args.phoneNumber, 'phoneNumber');
         checkIfUserExists(menu.args.phoneNumber).then(
           (val) => {
-            // console.log('********', val)
             menu.session.set("loginStatus", "");
             if (val.data.length < 1) {
-              menu.con("Welcome to " + scheme + " \n1. Register \n2. Help");
+              menu.con("Welcome to SpectrumMFB "  + " \n1. Register \n2. Help");
             } else {
               // if (val.data[0].account) {
-              menu.con("Welcome's to " + scheme + ", \nPlease enter PIN");
+              menu.con("Welcome's to SpectrumMFB "  + ", \nPlease enter PIN");
               // }
               // else {
               //   menu.con("Contact Customer Care for Account Upgrade");
@@ -32,7 +31,7 @@ module.exports = {
           (err) => {
             console.log(err);
             menu.con(
-              "Welcome to " + scheme + " \n" + "\n1. Register" + "\n2. Help"
+              "Welcome to SpectrumMFB "  + " \n" + "\n1. Register" + "\n2. Help"
             );
           }
         );

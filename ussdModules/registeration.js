@@ -30,6 +30,12 @@ module.exports = {
       },
     });
 
+    menu.state("help", {
+      run: () => {
+        menu.end("Thanks for contacting SpectrumMFB. Visit http://spectrumpay.com.ng/ for further instructions");
+      }
+    });
+
     menu.state("reg", {
       run: () => {
         menu.con("Welcome, Enter First name");
@@ -281,17 +287,17 @@ module.exports = {
             menu.args.phoneNumber
           ).then(
             (res) => {
+              console.log('******************')
+              console.log(res)
+              console.log('******************')
               let sess = sessions[menu.args.sessionId];
               let text =
-                "Welcome to " +
-                scheme +
-                " " +
+                "Welcome to SpectrumMFB " +
                 sess.fName +
                 " " +
                 sess.sName +
-                " " +
-                ".\nPlease visit http://spectrumpay.com.ng/ " +
-                "for further instructions";
+                " Your account number is  " + res.data.data.account.accountNumber +
+                ".\nPlease visit http://spectrumpay.com.ng/ for further instructions";
 
               message(text, menu.args.phoneNumber).then((res) => {
                 console.log(res.data.messages);

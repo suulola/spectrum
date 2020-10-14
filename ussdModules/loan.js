@@ -40,7 +40,6 @@ module.exports = {
               async (data) => {
                 userData = await checkIfUserExists(menu.args.phoneNumber);
                 userData = userData.data[0];
-                console.log(userData);
                 loanData = data.data;
                 resolve("loan.list");
               },

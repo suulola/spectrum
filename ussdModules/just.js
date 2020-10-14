@@ -19,7 +19,7 @@ return new Promise((resolve) => {
                     paymentOffer: paymentOffer,
                     offer: dt,
                     amount: menu.val * 100,
-                    transaction_desc: "Loan advice for Spectrum",
+                    transaction_desc: "Loan advice for SpectrumMFB",
                     customer_ref: bu.mobile.substring(1),
                     firstname:bu.fName,
                     surname:bu.sName,
@@ -53,7 +53,7 @@ return new Promise((resolve) => {
                             bu.fName +
                             ' ' +
                             bu.sName +
-                            ' Your loan request was successfull. Please check your loan status or visit http://spectrumpay.com.ng/ for more information. Thank you';
+                            ' Your loan request was successful. Please check your loan status or visit http://spectrumpay.com.ng/ for more information. Thank you';
                         message(text, menu.args.phoneNumber).then((res) => {
                             console.log(res, 'message res');
                             resolve('loan.response');

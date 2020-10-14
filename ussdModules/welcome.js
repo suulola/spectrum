@@ -7,12 +7,10 @@ module.exports = {
     menu.state("welcomeState", {
       run: () => {
         menu.session.get("loginStatus").then((status) => {
-          console.log(status, "login   status");
-          if (status !== "") {
+          if (status) {
             menu.con(
-              "Welcome to " +
-                scheme +
-                "\n1. Loans \n2. Check balance \n3. Fund Account \n4. Services \n5. Referrals \n0. Exit "
+              "Welcome to SpectrumMFB. Choose an option " +
+                "\n1. Airtime \n2. Check balance \n3. Fund Account \n4. Services \n5. Referrals  \n6. Loans \n0. Exit "
             );
           } else {
             verifyPin(menu.val, menu.args.phoneNumber)
@@ -21,13 +19,8 @@ module.exports = {
 
                 this.setBaseUser = val.data.data;
                 STATE.data = val.data.data;
-                // menu.session.get('data').then((val) => {
-                // 	console.log(val, 'data from the welcome screen');
-                // });
-                console.log(val.data.data, "id");
 
                 if (val.data.status) {
-                  console.log("NOT EMPTY");
                   menu.session.set("loginStatus", "isLogedIn");
                   menu.session.set(
                     "accountNumber",
@@ -35,29 +28,27 @@ module.exports = {
                   );
 
                   menu.con(
-                    "Welcome to " +
-                      scheme +
-                      "\n1. Loans \n2. Check Balance  \n3. Fund Account \n4. Services \n5. Referrals \n0. Exit"
+                    "Welcome to SpectrumMFB. Choose an option " +
+                      "\n1. Airtime \n2. Check Balance  \n3. Fund Account \n4. Services \n5. Referrals \n6. Loans \n0. Exit"
                   );
                 } else {
                   menu.session.set("loginStatus", "");
-                  console.log("is empty");
                   menu.con("Please login again. Enter a valid PIN");
                 }
               })
               .catch((err) => {
-                console.log(err, "********************");
                 menu.con("Please login again. Enter a valid PIN");
               });
           }
         });
       },
       next: {
-        1: "loan",
+        1: "service.airtime",
         2: "checkBalance",
         3: "fundWalletState",
         4: "services",
         5: "referal",
+        6: "loan",
         0: "exit",
         "*[1-9]": "welcomeState",
       },
@@ -66,7 +57,7 @@ module.exports = {
     menu.state("exit", {
       run: () => {
         menu.session.set("loginStatus", "").then((val) => {
-          menu.end("Thanks for using " + scheme);
+          menu.end("Thanks for using SpectrumMFB");
         });
       },
     });
