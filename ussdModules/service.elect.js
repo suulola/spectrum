@@ -142,10 +142,16 @@ module.exports = {
               }
               let account_number = data.data[0].account.accountNumber;
 
-              let walletCheck = preparePurchase(account_number, amount * 100);
-              if (walletCheck.canProceed) {
+              modelElecBills.account_number = account_number;
+              modelElecBills.mobile = bu.mobile;
+              // let walletCheck = preparePurchase(account_number, amount * 100);
+              // if (walletCheck.canProceed) {
                 payBill(modelElecBills)
                   .then((val) => {
+                    if(val.data.status === false) {
+                      menu.end(val.data.message || 'Transaction Failed');
+                      return;
+                     }
                     console.log(val, "response from test payment");
                     bu["transaction"] = {
                       scheme: scheme,
@@ -186,9 +192,9 @@ module.exports = {
                     console.log(err, "error from response");
                     resolve("service.bills.elec.error");
                   });
-              } else {
-                resolve("service.bills.lowBalance");
-              }
+              // } else {
+              //   resolve("service.bills.lowBalance");
+              // }
               // console.log(val.data[0].wallet.balance / 100);
               // if (
               //   val.data[0].wallet.balance / 100 <=

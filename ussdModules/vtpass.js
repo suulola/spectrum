@@ -18,9 +18,13 @@ module.exports = {
     return axios.post(apiURL, model);
   },
   payBill(model) {
-    let apiURL = `${apiUrl}vtpass/utility/pay`;
+    let apiURL = `${apiUrl}ussd/vtpass/utility/pay`;
     return axios.post(apiURL, model);
   },
+
+
+
+  // TEST
   getVariationsTest(serviceID) {
    
     let apiURL = `${apiUrl}vtpass/tv/get-variation-code_test?serviceID=${serviceID}`;
