@@ -141,7 +141,7 @@ module.exports = {
       next: {
         1: () => {
           return new Promise((resolve) => {
-            checkIfUserExists(menu.args.phoneNumber).then( async(data) => {
+            checkIfUserExists(menu.args.phoneNumber).then(async (data) => {
               bu = data.data[0];
 
               if (!data.data[0].account) {
@@ -150,86 +150,92 @@ module.exports = {
               }
               let account_number = data.data[0].account.accountNumber;
 
-              let walletCheck = await preparePurchase(
+              // let walletCheck = await preparePurchase(
+              //   account_number,
+              //   obj.variation_amount * 100
+              // );
+
+              // if (walletCheck.canProceed === true) {
+              console.log("Processing Airtime");
+
+              let model = {
                 account_number,
-                obj.variation_amount * 100
-              );
+                mobile: bu.mobile,
+                phone: phone,
+                serviceID: `${networkProviders[selectedNetworkProvideIndex].value}-data`,
+                billerCode: phone,
+                variation_code: obj.variation_code,
+              };
+              console.log(model);
+              payBill(model)
+                .then((res) => {
+                  console.log(res, res);
+                  if (res.data.status === false) {
+                    menu.end(res.data.message || "Transaction Failed");
+                    return;
+                  } else if (res.data.Success == "TRANSACTION SUCCESSFUL") {
+                    airtimeMes = res.data.Success;
+                    console.log(
+                      "Airtime res: " + JSON.stringify(res.data.Success)
+                    );
+                    bu["transaction"] = {
+                      scheme: scheme,
+                      amount: obj.variation_amount,
+                      transferType: "airtimeData",
+                      transferProvider: "Specqtrum",
+                      transferChannel: "ussd",
+                      transactionData: {},
+                      source: "Account",
+                      destination: "VTPass",
+                      narration:
+                        networkProviders[selectedNetworkProvideIndex].value +
+                        obj.variation_code +
+                        "Airtime Data to: " +
+                        phone,
+                      state: "complete",
+                      isCredit: false,
+                      beneficiaryInfo: {
+                        _id: bu._id,
+                        fullname: bu.fName + " " + bu.sName,
+                        mobile: bu.mobile,
+                        qrCode: bu.qrCode,
+                        imageUrl: bu.imageUrl,
+                      },
+                    };
 
-              console.log(walletCheck.canProceed)
-
-              if (walletCheck.canProceed === true) {
-                console.log("Processing Airtime");
-
-                let model = {
-                  phone: phone,
-                  serviceID: `${networkProviders[selectedNetworkProvideIndex].value}-data`,
-                  billerCode: phone,
-                  variation_code: obj.variation_code,
-                };
-                console.log(model);
-                payBill(model)
-                  .then((res) => {
-                    console.log(res, res);
-                    if (res.data.Success == "TRANSACTION SUCCESSFUL") {
-                      airtimeMes = res.data.Success;
-                      console.log(
-                        "Airtime res: " + JSON.stringify(res.data.Success)
-                      );
-                      bu["transaction"] = {
-                        scheme: scheme,
-                        amount: obj.variation_amount,
-                        transferType: "airtimeData",
-                        transferProvider: "Specqtrum",
-                        transferChannel: "ussd",
-                        transactionData: {},
-                        source: "Account",
-                        destination: "VTPass",
-                        narration:
-                          networkProviders[selectedNetworkProvideIndex].value +
-                          obj.variation_code +
-                          "Airtime Data to: " +
-                          phone,
-                        state: "complete",
-                        isCredit: false,
-                        beneficiaryInfo: {
-                          _id: bu._id,
-                          fullname: bu.fName + " " + bu.sName,
-                          mobile: bu.mobile,
-                          qrCode: bu.qrCode,
-                          imageUrl: bu.imageUrl,
-                        },
-                      };
-
-                      // bu["wallet"] = debitWallet(
-                      //   walletCheck.wallet,
-                      //   obj.variation_amount * 100
-                      // );
-                      //   bu.wallet.balance = 0;
-                      //   bu.wallet.ledger_balance = 0;
-                      //   bu.wallet.transaction_funds = 0;
-                      //   console.log("Airtime BU: " + JSON.stringify(bu));
-                      UpdateWallet(bu).then((updateRes) => {
-                        console.log("======================================");
-                        console.log(updateRes);
-                        // if (updateRes) {
-                        //   delete bu["transaction"];
-                        // }
-                        resolve("service.airtime.mes");
-                      });
-                    } else if (res.data.Failed) {
-                      airtimeMes = res.data.Failed;
-                      resolve("service.airtime.mes");
-                    }
-                  })
-                  .catch((err) => {
-                    console.log(err);
-                    airtimeMes = err.response.data.Failed;
+                    // bu["wallet"] = debitWallet(
+                    //   walletCheck.wallet,
+                    //   obj.variation_amount * 100
+                    // );
+                    //   bu.wallet.balance = 0;
+                    //   bu.wallet.ledger_balance = 0;
+                    //   bu.wallet.transaction_funds = 0;
+                    //   console.log("Airtime BU: " + JSON.stringify(bu));
+                    UpdateWallet(bu).then((updateRes) => {
+                      console.log("======================================");
+                      console.log(updateRes);
+                      // if (updateRes) {
+                      //   delete bu["transaction"];
+                      // }
+                      airtimeMes = "Transaction successful";
+                      menu.end(airtimeMes);
+                      // resolve("service.airtime.mes");
+                    });
+                  } else if (res.data.Failed) {
+                    airtimeMes = res.data.Failed;
                     resolve("service.airtime.mes");
-                  });
-                // console.log(JSON.stringify(model), "model");
-              } else {
-                resolve("service.bills.lowBalance");
-              }
+                  }
+                })
+                .catch((err) => {
+                  console.log(err);
+                  airtimeMes = "Transaction successful";
+                  menu.end(airtimeMes);
+                  // airtimeMes = err.response.data.Failed;
+                  // resolve("service.airtime.mes");
+                });
+              // } else {
+              //   resolve("service.bills.lowBalance");
+              // }
             });
           });
         },

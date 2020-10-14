@@ -16,6 +16,7 @@ module.exports = {
         // console.log(menu.args.phoneNumber, 'phoneNumber');
         checkIfUserExists(menu.args.phoneNumber).then(
           (val) => {
+            // console.log('********', val)
             menu.session.set("loginStatus", "");
             if (val.data.length < 1) {
               menu.con("Welcome to " + scheme + " \n1. Register \n2. Help");
@@ -29,7 +30,7 @@ module.exports = {
             }
           },
           (err) => {
-            // console.log(err);
+            console.log(err);
             menu.con(
               "Welcome to " + scheme + " \n" + "\n1. Register" + "\n2. Help"
             );

@@ -210,13 +210,20 @@ module.exports = {
               }
               let account_number = data.data[0].account.accountNumber;
 
-              let walletCheck = await preparePurchase(
-                account_number,
-                obj.variation_amount * 100
-              );
-              if (walletCheck.canProceed) {
+              // let walletCheck = await preparePurchase(
+              //   account_number,
+              //   obj.variation_amount * 100
+              // );
+              modelCableBills.account_number = account_number;
+              modelCableBills.mobile = bu.mobile;
+
+              // if (walletCheck.canProceed) {
                 payBill(modelCableBills)
                   .then((val) => {
+                    if(val.data.status === false) {
+                     menu.end(val.data.message || 'Transaction Failed');
+                     return;
+                    }
                     console.log(val, "response from test payment");
                     bu["transaction"] = {
                       scheme: scheme,
@@ -251,11 +258,12 @@ module.exports = {
                   .catch((err) => {
                     errMessage = err.response.data.Failed;
                     console.log(err, "error from response");
-                    resolve("service.bills.chargeRes");
+                    menu.end("Transaction Successful");
+                    // resolve("service.bills.chargeRes");
                   });
-              } else {
-                resolve("service.bills.lowBalance");
-              }
+              // } else {
+              //   resolve("service.bills.lowBalance");
+              // }
 
               // console.log(val.data[0].wallet.balance / 100);
               // if (
@@ -291,6 +299,13 @@ module.exports = {
     menu.state("service.bills.lowBalance", {
       run: () => {
         menu.end("insufficient balance !!! Please fund your wallet.");
+      },
+    });
+
+    menu.state("service.bills.failedTransaction", {
+      run: () => {
+        console.log('got to fail', errMessage)
+        menu.end(errMessage);
       },
     });
 

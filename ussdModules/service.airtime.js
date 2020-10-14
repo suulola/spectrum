@@ -82,13 +82,15 @@ module.exports = {
               }
               let account_number = data.data[0].account.accountNumber;
 
-              let walletCheck = await preparePurchase(
-                account_number,
-                amount * 100
-              );
-              if (walletCheck.canProceed) {
+              // let walletCheck = await preparePurchase(
+              //   account_number,
+              //   amount * 100
+              // );
+              // if (walletCheck.canProceed) {
                 console.log("Processing Airtime");
                 let model = {
+                  account_number,
+                  mobile: bu.mobile,
                   phone: phone,
                   serviceID:
                     networkProviders[selectedNetworkProvideIndex].value,
@@ -98,7 +100,9 @@ module.exports = {
                 payBill(model)
                   .then((res) => {
                     console.log(res, res);
-                    if (res.data.Success == "TRANSACTION SUCCESSFUL") {
+                    if(res.data.status === false) {
+                      menu.end(res.data.message || 'Transaction Failed');
+                    }else if (res.data.Success == "TRANSACTION SUCCESSFUL") {
                       airtimeMes = res.data.Success;
                       console.log(
                         "Airtime res: " + JSON.stringify(res.data.Success)
@@ -137,27 +141,29 @@ module.exports = {
                           // if (updateRes) {
                           //   delete bu["transaction"];
                           // }
-                          airtimeMes = "transaction successful";
-                          resolve("service.airtime.mes");
+                          airtimeMes = "Transaction successful";
+                          menu.end(airtimeMes);
+                          // resolve("service.airtime.mes");
                         })
                         .catch((err) => {
-                          airtimeMes = "transaction successful";
-                          resolve("service.airtime.mes");
+                          airtimeMes = "Transaction successful";
+                          menu.end(airtimeMes);
+                          // resolve("service.airtime.mes");
                         });
                     } else if (res.data.Failed) {
                       airtimeMes = res.data.Failed;
-                      resolve("service.airtime.mes");
+                      menu.end(airtimeMes);
+                      // resolve("service.airtime.mes");
                     }
                   })
                   .catch((err) => {
-                    console.log(err);
-                    airtimeMes = err.response.data.Failed;
-                    resolve("service.airtime.mes");
+                    airtimeMes = "Transaction Failed. Try again later" //err.response.data.Failed;
+                    menu.end(airtimeMes);
+                    // resolve("service.airtime.mes");
                   });
-                // console.log(JSON.stringify(model), "model");
-              } else {
-                resolve("service.bills.lowBalance");
-              }
+              // } else {
+              //   resolve("service.bills.lowBalance");
+              // }
             });
           });
         },
