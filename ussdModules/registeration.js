@@ -3,6 +3,7 @@ const { textfunc, registerUser, message, scheme } = require("./buddyFuctions");
 module.exports = {
   RegisterUser(menu) {
     let sessions = {};
+    let registrationModel = {};
     menu.sessionConfig({
       get: function (sessionId, key) {
         return new Promise((resolve, reject) => {
@@ -32,8 +33,10 @@ module.exports = {
 
     menu.state("help", {
       run: () => {
-        menu.end("Thanks for contacting SpectrumMFB. Visit http://spectrumpay.com.ng/ for further instructions");
-      }
+        menu.end(
+          "Thanks for contacting SpectrumMFB. Visit http://spectrumpay.com.ng/ for further instructions"
+        );
+      },
     });
 
     menu.state("reg", {
@@ -43,8 +46,9 @@ module.exports = {
       next: {
         "*[a-zA-Z]+": () => {
           return new Promise((resolve) => {
+            console.log("saving first name ", menu.val);
             if (typeof menu.val === "string" && menu.val.length > 0) {
-              menu.session.set("fName", menu.val);
+              registrationModel.fName = menu.val;
               resolve("reg.mName");
             }
           });
@@ -59,8 +63,9 @@ module.exports = {
       next: {
         "*[a-zA-Z]+": () => {
           return new Promise((resolve) => {
+            console.log("saving first name ", registrationModel, menu.val);
             if (typeof menu.val === "string" && menu.val.length > 0) {
-              menu.session.set("mName", menu.val).then(() => {});
+              registrationModel.mName = menu.val;
               resolve("reg.lName");
             }
           });
@@ -73,9 +78,10 @@ module.exports = {
       },
       next: {
         "*[a-zA-Z]+": () => {
+          console.log("saving last name ", registrationModel, menu.val);
           return new Promise((resolve) => {
             if (typeof menu.val === "string" && menu.val.length > 0) {
-              menu.session.set("sName", menu.val).then(() => {});
+              registrationModel.sName = menu.val;
               resolve("reg.Email");
             }
           });
@@ -90,10 +96,11 @@ module.exports = {
         "*[a-zA-Z]+": () => {
           return new Promise((resolve) => {
             var re = /\S+@\S+\.\S+/;
-            if ( re.test(menu.val) && menu.val.length > 0) {
-              menu.session.set("email", menu.val).then(() => {});
+            if (menu.val.includes("@") && menu.val.length > 5) {
+              registrationModel.email = menu.val;
+              // menu.session.set("email", menu.val).then(() => {});
               resolve("reg.Gender");
-            }else {
+            } else {
               resolve("reg.Email");
             }
           });
@@ -110,13 +117,16 @@ module.exports = {
         "*[0-9]": () => {
           return new Promise((resolve) => {
             if (menu.val === "1") {
-              menu.session.set("gender", "male");
+              registrationModel.gender = "male";
+              // menu.session.set("gender", "male");
               resolve("reg.Address");
             } else if (menu.val === "2") {
-              menu.session.set("gender", "female");
+              registrationModel.gender = "female";
+              // menu.session.set("gender", "female");
               resolve("reg.Address");
             } else if (menu.val === "3") {
-              menu.session.set("gender", "others");
+              registrationModel.gender = "others";
+              // menu.session.set("gender", "others");
               resolve("reg.Address");
             } else {
               resolve("reg.Gender");
@@ -132,9 +142,11 @@ module.exports = {
       },
       next: {
         "*[a-zA-Z]+": () => {
+          console.log("address", registrationModel, menu.val);
           return new Promise((resolve) => {
             if (typeof menu.val === "string" && menu.val.length > 0) {
-              menu.session.set("address", menu.val).then(() => {});
+              registrationModel.address = menu.val;
+              // menu.session.set("address", menu.val).then(() => {});
               resolve("reg.DateOfBirth");
             }
           });
@@ -149,11 +161,13 @@ module.exports = {
       next: {
         "*": () => {
           return new Promise((resolve) => {
+            console.log("dov ", registrationModel, menu.val);
             var regExp = /(^(((0[1-9]|1[0-9]|2[0-8])[-](0[1-9]|1[012]))|((29|30|31)[-](0[13578]|1[02]))|((29|30)[-](0[4,6,9]|11)))[-](19|[2-9][0-9])\d\d$)|(^29[-]02[-](19|[2-9][0-9])(00|04|08|12|16|20|24|28|32|36|40|44|48|52|56|60|64|68|72|76|80|84|88|92|96)$)/;
             console.log(regExp.test(menu.val));
             console.log(menu.val);
             if (regExp.test(menu.val) && menu.val.length > 0) {
-              menu.session.set("dob", menu.val).then(() => {});
+              registrationModel.dob = menu.val;
+              // menu.session.set("dob", menu.val).then(() => {});
               resolve("reg.Pin");
             } else {
               resolve("reg.DateOfBirth");
@@ -172,7 +186,8 @@ module.exports = {
         "*[0-9]": () => {
           return new Promise((resolve) => {
             if (menu.val.length === 6) {
-              menu.session.set("pin1", menu.val).then(() => {});
+              registrationModel.pin1 = menu.val;
+              // menu.session.set("pin1", menu.val).then(() => {});
               resolve("reg.ConfirmPin");
             } else {
               resolve("inValid.Pin");
@@ -190,7 +205,9 @@ module.exports = {
         "*[0-9]": () => {
           return new Promise((resolve) => {
             if (menu.val.length === 6) {
-              menu.session.set("pin1", menu.val).then(() => {});
+              // menu.session.set("pin1", menu.val).then(() => {});
+              registrationModel.pin1 = menu.val;
+
               resolve("reg.ConfirmPin");
             } else {
               resolve("inValid.Pin");
@@ -208,35 +225,16 @@ module.exports = {
       next: {
         "*[0-9]": () => {
           return new Promise((resolve, reject) => {
-            menu.session.get("pin1").then((val) => {
-              console.log(val, "gotten value");
-              console.log(menu.val, "gxchvj");
-              if (val === menu.val) {
-                menu.session.set("confirmPin", menu.val);
-                console.log("confirmed");
-                resolve("check");
-              } else if (val !== menu.val) {
-                resolve("inValid.Pin");
-              }
-            });
+            if (registrationModel.pin1 === menu.val) {
+              registrationModel.confirmPin = menu.val;
+              resolve("check");
+            } else {
+              resolve("pin.misMatch");
+            }
           });
         },
       },
     });
-
-    // menu.state('reg.email', {
-    // 	run: () => {
-    // 		menu.con('Please enter your email address');
-    // 	},
-    // 	next: {
-    // 		'*[a-zA-Z]+': () => {
-    // 			return new Promise((resolve) => {
-    // 				menu.session.set('email', menu.val);
-    // 				resolve('check');
-    // 			});
-    // 		}
-    // 	}
-    // });
 
     menu.state("pin.misMatch", {
       run: () => {
@@ -246,18 +244,12 @@ module.exports = {
       next: {
         "*[0-9]": () => {
           return new Promise((resolve, reject) => {
-            menu.session.get("pin1").then((val) => {
-              console.log(val, "gotten value");
-              console.log(menu.val, "gxchvj");
-
-              if (val === menu.val) {
-                menu.session.set("confirmPin", menu.val);
-                console.log("confirmed");
-                resolve("check");
-              } else if (val !== menu.val) {
-                resolve("pin.misMatch");
-              }
-            });
+            if (registrationModel.pin1 === menu.val) {
+              registrationModel.confirmPin = menu.val;
+              resolve("check");
+            } else {
+              resolve("pin.misMatch");
+            }
           });
         },
       },
@@ -265,10 +257,8 @@ module.exports = {
 
     menu.state("check", {
       run: () => {
-        let sId = menu.args.sessionId;
-        console.log(sessions, "sesssion");
         menu.con(
-          `${sessions[sId].fName} ${sessions[sId].mName} ${sessions[sId].sName}, ${sessions[sId].gender}, ${sessions[sId].email}, ${sessions[sId].dob}, ${sessions[sId].address}, ${sessions[sId].pin1}, \nPress 1 to confirm`
+          `${registrationModel.fName} ${registrationModel.mName} ${registrationModel.sName}, ${registrationModel.gender}, ${registrationModel.email}, ${registrationModel.dob}, ${registrationModel.address}, ${registrationModel.pin1}, \nPress 1 to confirm`
         );
       },
       next: {
@@ -281,22 +271,19 @@ module.exports = {
       run: () => {
         // textfunc(sessions[menu.args.sessionId], menu.args.phoneNumber);
         return new Promise((resolve) => {
-          console.log(sessions, "sessions");
-          registerUser(
-            sessions[menu.args.sessionId],
-            menu.args.phoneNumber
-          ).then(
+          console.log(registrationModel, "final registration model");
+          registerUser(registrationModel, menu.args.phoneNumber).then(
             (res) => {
-              console.log('******************')
-              console.log(res)
-              console.log('******************')
-              let sess = sessions[menu.args.sessionId];
+              console.log("******************");
+              console.log(res);
+              console.log("******************");
               let text =
                 "Welcome to SpectrumMFB " +
-                sess.fName +
+                registrationModel.fName.toUpperCase() +
                 " " +
-                sess.sName +
-                " Your account number is  " + res.data.data.account.accountNumber +
+                registrationModel.sName.toUpperCase() +
+                " Your account number is  " +
+                res.data.data.account.accountNumber +
                 ".\nPlease visit http://spectrumpay.com.ng/ for further instructions";
 
               message(text, menu.args.phoneNumber).then((res) => {
@@ -306,6 +293,7 @@ module.exports = {
               });
             },
             (err) => {
+              console.log(error, "this is the error");
               resolve(menu.end(" error !!!"));
             }
           );
