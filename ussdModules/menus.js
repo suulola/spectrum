@@ -21,7 +21,7 @@ module.exports = {
               menu.con("Welcome to SpectrumMFB "  + " \n1. Register \n2. Help");
             } else {
               // if (val.data[0].account) {
-              menu.con("Welcome's to SpectrumMFB "  + ", \nPlease enter PIN");
+              menu.con("Welcome to SpectrumMFB "  + ", \nPlease enter PIN");
               // }
               // else {
               //   menu.con("Contact Customer Care for Account Upgrade");

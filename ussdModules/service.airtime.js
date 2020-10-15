@@ -2,8 +2,6 @@ const { networkProviders } = require("./consts");
 const {
   checkIfUserExists,
   UpdateWallet,
-  debitWallet,
-  preparePurchase,
 } = require("./universalFuctions");
 const { payBill } = require("./vtpass");
 const { scheme } = require("./consts");
