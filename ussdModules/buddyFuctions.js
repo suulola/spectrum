@@ -127,7 +127,8 @@ module.exports = {
       x: bvn,
     });
     if (
-      response.data.data && response.data.data.first_name === fName.toUpperCase() &&
+      response.data.data &&
+      response.data.data.first_name === fName.toUpperCase() &&
       response.data.data.last_name === sName.toUpperCase()
     ) {
       return true;
@@ -157,9 +158,9 @@ module.exports = {
   message(text, phoneNum) {
     console.log(text, phoneNum, "adadadadada");
     return axios.post(`${apiUrl}auth/sendSMS/`, {
+      text: text,
       to: phoneNum,
       from: scheme,
-      text: text,
     });
   },
 
