@@ -127,7 +127,7 @@ module.exports = {
       x: bvn,
     });
     if (
-      response.data.data.first_name === fName.toUpperCase() &&
+      response.data.data && response.data.data.first_name === fName.toUpperCase() &&
       response.data.data.last_name === sName.toUpperCase()
     ) {
       return true;
