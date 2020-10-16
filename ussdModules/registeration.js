@@ -109,7 +109,7 @@ module.exports = {
         "*[a-zA-Z]+": () => {
           return new Promise((resolve) => {
             // var re = /\S+@\S+\.\S+/;
-            if (JSON.stringify(menu.val).includes("@") && menu.val.length > 0) {
+            if (menu.val.length > 0) {
               registrationModel[menu.args.phoneNumber].email = menu.val;
               // menu.session.set("email", menu.val);
               resolve("reg.Gender");
@@ -157,39 +157,43 @@ module.exports = {
       },
       next: {
         "*[a-zA-Z]+": () => {
-          console.log("address", menu.val, registrationModel[menu.args.phoneNumber]);
+          console.log(
+            "address",
+            menu.val,
+            registrationModel[menu.args.phoneNumber]
+          );
           return new Promise((resolve) => {
             if (typeof menu.val === "string" && menu.val.length > 0) {
               registrationModel[menu.args.phoneNumber].address = menu.val;
               // menu.session.set("address", menu.val);
-              resolve("reg.DateOfBirth");
+              resolve("reg.Pin");
             }
           });
         },
       },
     });
 
-    menu.state("reg.DateOfBirth", {
-      run: () => {
-        menu.con("Enter your Date of Birth [dd-mm-yyyy format]");
-      },
-      next: {
-        "*": () => {
-          return new Promise((resolve) => {
-            var regExp = /(^(((0[1-9]|1[0-9]|2[0-8])[-](0[1-9]|1[012]))|((29|30|31)[-](0[13578]|1[02]))|((29|30)[-](0[4,6,9]|11)))[-](19|[2-9][0-9])\d\d$)|(^29[-]02[-](19|[2-9][0-9])(00|04|08|12|16|20|24|28|32|36|40|44|48|52|56|60|64|68|72|76|80|84|88|92|96)$)/;
-            console.log(regExp.test(menu.val));
-            console.log(menu.val);
-            if (regExp.test(menu.val) && menu.val.length > 0) {
-              registrationModel[menu.args.phoneNumber].dob = menu.val;
-              // menu.session.set("dob", menu.val);
-              resolve("reg.Pin");
-            } else {
-              resolve("reg.DateOfBirth");
-            }
-          });
-        },
-      },
-    });
+    // menu.state("reg.DateOfBirth", {
+    //   run: () => {
+    //     menu.con("Enter your Date of Birth [dd-mm-yyyy format]");
+    //   },
+    //   next: {
+    //     "*": () => {
+    //       return new Promise((resolve) => {
+    //         var regExp = /(^(((0[1-9]|1[0-9]|2[0-8])[-](0[1-9]|1[012]))|((29|30|31)[-](0[13578]|1[02]))|((29|30)[-](0[4,6,9]|11)))[-](19|[2-9][0-9])\d\d$)|(^29[-]02[-](19|[2-9][0-9])(00|04|08|12|16|20|24|28|32|36|40|44|48|52|56|60|64|68|72|76|80|84|88|92|96)$)/;
+    //         console.log(regExp.test(menu.val));
+    //         console.log(menu.val);
+    //         if (regExp.test(menu.val) && menu.val.length > 0) {
+    //           registrationModel[menu.args.phoneNumber].dob = menu.val;
+    //           // menu.session.set("dob", menu.val);
+    //           resolve("reg.Pin");
+    //         } else {
+    //           resolve("reg.DateOfBirth");
+    //         }
+    //       });
+    //     },
+    //   },
+    // });
 
     menu.state("reg.Pin", {
       run: () => {
@@ -261,7 +265,11 @@ module.exports = {
         "*[0-9]": () => {
           return new Promise(async (resolve, reject) => {
             const firstPin = registrationModel[menu.args.phoneNumber].pin1;
-            console.log(firstPin, "*******first pin*****", registrationModel[menu.args.phoneNumber]);
+            console.log(
+              firstPin,
+              "*******first pin*****",
+              registrationModel[menu.args.phoneNumber]
+            );
             if (firstPin === menu.val) {
               registrationModel[menu.args.phoneNumber].confirmPin = menu.val;
               // menu.session.set("confirmPin", menu.val);
@@ -282,9 +290,8 @@ module.exports = {
             registrationModel[menu.args.phoneNumber].mName
           } ${registrationModel[menu.args.phoneNumber].sName}, ${
             registrationModel[menu.args.phoneNumber].gender
-          }, ${registrationModel[menu.args.phoneNumber].email}, ${
-            registrationModel[menu.args.phoneNumber].dob
-          }, ${registrationModel[menu.args.phoneNumber].address}, ${
+          }, ${registrationModel[menu.args.phoneNumber].email}, 
+           ${registrationModel[menu.args.phoneNumber].address}, ${
             registrationModel[menu.args.phoneNumber].pin1
           }, \nPress 1 to confirm`
         );
@@ -299,12 +306,16 @@ module.exports = {
       run: () => {
         // textfunc(sessions[menu.args.sessionId], menu.args.phoneNumber);
         return new Promise((resolve) => {
+          
           console.log(
             registrationModel[menu.args.phoneNumber],
             "final registration model"
           );
+          if(!registrationModel[menu.args.phoneNumber].email.includes('@')) {
+            registrationModel[menu.args.phoneNumber].email = `${registrationModel[menu.args.phoneNumber].email}@invalid.com`
+          }
           registerUser(
-            registrationModel[menu.args.phoneNumber],
+           { ...registrationModel[menu.args.phoneNumber], 'dob': '01-01-2000'},
             menu.args.phoneNumber
           ).then(
             (res) => {
