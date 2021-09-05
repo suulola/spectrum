@@ -18,7 +18,7 @@ module.exports = {
           (val) => {
             menu.session.set("loginStatus", "");
             if (val.data.length < 1) {
-              menu.con("Welcome to SpectrumMFB "  + " \n1. Register \n2. Help");
+              menu.con("Welcome to SpectrumMFB USSD Services"  + " \n1. Register \n2. Help");
             } else {
               // if (val.data[0].account) {
               menu.con("Welcome to SpectrumMFB "  + ", \nPlease enter PIN");
@@ -31,7 +31,7 @@ module.exports = {
           (err) => {
             console.log(err);
             menu.con(
-              "Welcome to SpectrumMFB "  + " \n" + "\n1. Register" + "\n2. Help"
+              "Welcome to SpectrumMFB USSD Service "  + " \n" + "\n1. Register" + "\n2. Help"
             );
           }
         );

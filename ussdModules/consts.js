@@ -1,8 +1,8 @@
 module.exports = {
   scheme: "Spectrum",
   // apiUrl: "http://167.172.100.241:1235/",
-  // apiUrl: "http://localhost:1235/",
-  apiUrl: "http://api.spectrumpay.com.ng/",
+  apiUrl: " https://staging.spectrumpay.com.ng",
+  // apiUrl: "http://api.spectrumpay.com.ng/",
   modelBills: {
     phone: String,
     serviceID: String,

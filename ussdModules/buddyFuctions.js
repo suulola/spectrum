@@ -1,236 +1,261 @@
-const axios = require("axios");
+const axios = require('axios')
 
-// const apiUrl = "http://167.172.100.241:1235/";
-// const apiUrl = "http://localhost:1235/";
-const apiUrl = "http://api.spectrumpay.com.ng/";
-const scheme = "Spectrum";
+const apiUrl = 'http://staging.spectrumpay.com.ng/api/'
+const scheme = 'Spectrum'
 
 module.exports = {
   scheme: scheme,
   apiUrl: apiUrl,
-  requestloan(payload) {
+  requestloan (payload) {
     // console.log(payload, 'payload');
-    return axios.post(`${apiUrl}loans/registerLoanAllDataSpectrum/`, payload);
+    return axios.post(`${apiUrl}loans/registerLoanAllDataSpectrum/`, payload)
   },
-  getLoanList() {
+  getLoanList () {
     return axios.post(`${apiUrl}loans/getGenericLoans`, {
-      scheme: scheme,
-    });
+      scheme: scheme
+    })
   },
   // fetchBalance(phonenumber) {
   //   return new Promise((resolve, reject) => {
   //     resolve(phonenumber * 1);
   //   });
   // },
-  fetchBalance(accountNumber) {
+  fetchBalance (accountNumber) {
     return axios.post(`${apiUrl}cba/getBalance`, {
-      accountNumber: accountNumber,
-    });
+      accountNumber: accountNumber
+    })
   },
-  checkIfUserExists(phoneNumber) {
+  checkIfUserExists (phoneNumber) {
     return axios.post(`${apiUrl}users/getUsersByMobile/`, {
       x: phoneNumber,
-      scheme: scheme,
-    });
+      scheme: scheme
+    })
   },
-  debitCBAAccount(accountNumber, amount) {
+  debitCBAAccount (accountNumber, amount) {
     let debitModel = {
       accountNumber: accountNumber,
       amount: amount,
       narration: JSON.stringify({
         narration: `Bill payment of N${amount / 100}`,
-        action: "Bills",
-      }),
-    };
-    return axios.post(`${apiUrl}cba/debitAccount`, debitModel);
+        action: 'Bills'
+      })
+    }
+    return axios.post(`${apiUrl}cba/debitAccount`, debitModel)
   },
-  checkIfUserHasPendingLoan(phoneNumber) {
+  checkIfUserHasPendingLoan (phoneNumber) {
     return axios.post(`${apiUrl}users/getUsersByMobile/`, {
       x: phoneNumber,
-      scheme: scheme,
-    });
+      scheme: scheme
+    })
   },
-  verifyPin(pin, phonenumber) {
+  verifyPin (pin, phonenumber) {
     return axios.post(`${apiUrl}auth/login`, {
       xMobile: phonenumber,
       xPin: pin,
-      scheme: scheme,
-    });
+      scheme: scheme
+    })
   },
 
-  calOnlineCharge(amt) {
+  calOnlineCharge (amt) {
     // console.log(amt, 'amount');
-    return Math.round((amt / 0.985) * 1);
+    return Math.round((amt / 0.985) * 1)
   },
 
-  hotPayBackLoan(authCode, baseUser, loanObj) {
+  hotPayBackLoan (authCode, baseUser, loanObj) {
     // console.log(authCode, 'auth code'), console.log(loanObj, 'LoanObj'), console.log(baseUser, 'bASEUSER');
     // console.log(loanObj.details[0].interest);
     // return true;
     return axios.post(`${apiUrl}payments/payBackSpectrum`, {
       authorization_code: authCode,
       bu: baseUser,
-      loan: loanObj,
-    });
+      loan: loanObj
+    })
   },
 
-  hotChargeCard(amt, authCode, baseUser) {
-    let amount = amt * 100;
-    console.log(amt, authCode, baseUser, "logged");
-    console.log(amount, "amount in kobo");
-    console.log(baseUser, "baseUSER");
-    console.log(authCode, "authCode");
+  hotChargeCard (amt, authCode, baseUser) {
+    let amount = amt * 100
+    console.log(amt, authCode, baseUser, 'logged')
+    console.log(amount, 'amount in kobo')
+    console.log(baseUser, 'baseUSER')
+    console.log(authCode, 'authCode')
     return axios.post(`${apiUrl}payments/chargeCardSpectrum`, {
       authorization_code: authCode,
       amount: amount,
-      bu: baseUser,
-    });
+      bu: baseUser
+    })
   },
 
-  fundAccount(amt, authCode, baseUser, bankDetail) {
+  fundAccount (amt, authCode, baseUser, bankDetail) {
     const creditModel = {
       bankDetail: {
         bankCode: bankDetail.bank_code,
         authorization_code: authCode,
-        bankAccountNumber: bankDetail.account_no,
+        bankAccountNumber: bankDetail.account_no
       },
       phoneNumber: baseUser.mobile,
       email: baseUser.email,
       accountNumber: baseUser.account.accountNumber,
 
-      amount: amt * 100,
-    };
-    console.log(amt, authCode, baseUser, "logged");
-    console.log(creditModel, "credit model");
-    return axios.post(`${apiUrl}cba/ussd/fundAccount`, creditModel);
+      amount: amt * 100
+    }
+    console.log(amt, authCode, baseUser, 'logged')
+    console.log(creditModel, 'credit model')
+    return axios.post(`${apiUrl}cba/ussd/fundAccount`, creditModel)
   },
 
-  getLoanBalance(userId) {
+  getLoanBalance (userId) {
     // console.log(userId, 'loan');
     // console.log(userId, 'userid used');
     return axios.post(`${apiUrl}loans/getLoansByUserId/`, {
       xid: userId,
-      scheme: scheme,
-    });
+      scheme: scheme
+    })
   },
 
-  updateLoanStatusToRepaid(id) {
-    return axios.post(`${apiUrl}loans/updateLoanStatusToRepaid/`, {});
+  updateLoanStatusToRepaid (id) {
+    return axios.post(`${apiUrl}loans/updateLoanStatusToRepaid/`, {})
   },
 
-  updateWalletBalance(baseUser) {
-    return axios.post(`${apiUrl}fundWallet/fund`, baseUser);
+  updateWalletBalance (baseUser) {
+    return axios.post(`${apiUrl}fundWallet/fund`, baseUser)
   },
 
-  async verifyBVN(bvn, fName, sName) {
+  async verifyBVN (bvn, fName, sName) {
     const response = await axios.post(`${apiUrl}payments/resolvebvn`, {
-      x: bvn,
-    });
+      x: bvn
+    })
     if (
       response.data.data &&
       response.data.data.first_name === fName.toUpperCase() &&
       response.data.data.last_name === sName.toUpperCase()
     ) {
-      return true;
+      return true
     } else {
-      return false;
+      return false
     }
   },
 
-  updateBVN(baseUser) {
+  updateBVN (baseUser) {
     // console.log(baseUser, "baseUser");
-    return axios.post(`${apiUrl}users/updateUserBvn`, baseUser);
+    return axios.post(`${apiUrl}users/updateUserBvn`, baseUser)
   },
 
-  calcPayable(amt, tenor, interest) {
+  calcPayable (amt, tenor, interest) {
     // console.log('Amt: ' + amt);
     // console.log('tenor: ' + tenor);
     // console.log('interest: ' + interest);
-    let tenorx = tenor * 1;
-    let intx = (interest / 100) * 1;
-    intx = intx * amt;
-    let totinterest = intx * tenorx;
-    let amtx = amt * 1;
+    let tenorx = tenor * 1
+    let intx = (interest / 100) * 1
+    intx = intx * amt
+    let totinterest = intx * tenorx
+    let amtx = amt * 1
 
-    return totinterest + amtx;
+    return totinterest + amtx
   },
 
-  message(text, phoneNum) {
-    console.log(text, phoneNum, "adadadadada");
+  message (text, phoneNum) {
+    console.log(text, phoneNum, 'adadadadada')
     return axios.post(`${apiUrl}auth/sendSMS/`, {
       text: text,
       to: phoneNum,
-      from: scheme,
-    });
+      from: scheme
+    })
   },
 
-  registerUser(regObj, phoneNumber) {
-    // return console.log(regObj, phoneNumber, 'regObj');
-    return axios.post(`${apiUrl}users/register_user`, {
-      fName: regObj.fName,
-      mName: regObj.mName,
-      sName: regObj.sName,
-      address: regObj.address,
-      dob: regObj.dob,
-      xMobile: phoneNumber,
-      channel: "ussd",
-      email: regObj.email,
-      bvn: "",
-      sex: regObj.gender,
-      imgUrl: "",
-      xroles: ["User"],
-      xPin: regObj.pin1,
-      createdBy: "self",
-      referralCode: "",
-      scheme: "Spectrum",
-    });
+  async registerUser (regObj, phoneNumber) {
+    try {
+      const accountRequestBody = {
+        firstName: regObj.fName,
+        surname: regObj.sName,
+        homeAddress: '',
+        city: '',
+        phoneNumber: phoneNumber,
+        source: 'ussd'
+      }
+      const userRequestBody = {
+        name: `${regObj.fName} ${regObj.sName}`,
+        username: regObj.username,
+        phoneNumber: phoneNumber,
+        email: regObj.email,
+        source: 'ussd',
+        password: regObj.pin1,
+        accountNumber: ''
+      }
+      console.log({ accountRequestBody })
+
+      const accountAPIRequest = await axios.post(
+        `${apiUrl}create_account`,
+        accountRequestBody
+      )
+
+      console.log({ accountAPIRequest })
+
+      const accountNumber = 1000001
+
+      userRequestBody.accountNumber = accountNumber
+
+      const userAPIRequest = await axios.post(
+        `${apiUrl}user/create`,
+        userRequestBody
+      )
+
+      console.log({ userAPIRequest })
+
+      return {
+        status: true,
+        data: accountAPIRequest,
+        message: `Welcome to SpectrumMFB ${accountRequestBody.firstName.toUpperCase()} ${accountRequestBody.surname.toUpperCase()}. Your account number is ${accountNumber}.\nPlease visit http://spectrumpay.com.ng/ for further instructions`
+      }
+    } catch (error) {
+      return { status: false, message: 'User registration failed. Try again later. SpectrumMFB', error: error }
+    }
   },
 
-  getLoanTyes() {
-    return axios.get(`${apiUrl}`);
+  getLoanTyes () {
+    return axios.get(`${apiUrl}`)
   },
 
-  calcRecurringLoanAmount(principal, tenor, interest, mgtPerc) {
+  calcRecurringLoanAmount (principal, tenor, interest, mgtPerc) {
     // console.log('principal: '+principal); console.log('tenor: '+tenor); console.log('interest: '+interest);
-    let mgtPercx = (mgtPerc / 100) * 1;
-    let mgtFees = 0;
-    let disburseAmt = 0;
-    let monthlyInterest = 0;
-    let monthlyPrincipleRepayment = 0;
-    let monthlyRepayments = 0;
-    let repaymentSchedule = new Array();
-    let loanOffer = {};
-    let principalx = principal * 1;
-    let tenorx = tenor * 1;
-    let intx = (interest / 100) * 1;
+    let mgtPercx = (mgtPerc / 100) * 1
+    let mgtFees = 0
+    let disburseAmt = 0
+    let monthlyInterest = 0
+    let monthlyPrincipleRepayment = 0
+    let monthlyRepayments = 0
+    let repaymentSchedule = new Array()
+    let loanOffer = {}
+    let principalx = principal * 1
+    let tenorx = tenor * 1
+    let intx = (interest / 100) * 1
     // console.log('intx: '+intx);
 
-    mgtFees = mgtPercx * principalx; //console.log('mgtFees: '+mgtFees);
-    disburseAmt = principalx - mgtFees; //console.log('disburseAmt: '+disburseAmt);
-    monthlyInterest = principalx * intx;
-    monthlyPrincipleRepayment = Number((principalx / tenorx).toFixed(2));
-    monthlyRepayments = monthlyPrincipleRepayment + monthlyInterest; //console.log('monthlyRepayments: '+monthlyRepayments);
+    mgtFees = mgtPercx * principalx //console.log('mgtFees: '+mgtFees);
+    disburseAmt = principalx - mgtFees //console.log('disburseAmt: '+disburseAmt);
+    monthlyInterest = principalx * intx
+    monthlyPrincipleRepayment = Number((principalx / tenorx).toFixed(2))
+    monthlyRepayments = monthlyPrincipleRepayment + monthlyInterest //console.log('monthlyRepayments: '+monthlyRepayments);
 
-    loanOffer.principal = principal * 100;
-    loanOffer.duration = tenor;
-    loanOffer.perc = interest;
-    loanOffer.mgtFees = mgtFees * 100;
-    loanOffer.disburseAmt = disburseAmt * 100;
-    loanOffer.monthlyPrincipleRepayment = monthlyPrincipleRepayment * 100;
-    loanOffer.monthlyInterest = monthlyInterest * 100;
-    loanOffer.monthlyRepayments = monthlyRepayments * 100;
-    loanOffer.totalInterest = loanOffer.monthlyInterest * tenorx;
-    loanOffer.interest = Math.round(loanOffer.monthlyRepayments * tenorx);
-    loanOffer.repaymentSchedule = repaymentSchedule;
+    loanOffer.principal = principal * 100
+    loanOffer.duration = tenor
+    loanOffer.perc = interest
+    loanOffer.mgtFees = mgtFees * 100
+    loanOffer.disburseAmt = disburseAmt * 100
+    loanOffer.monthlyPrincipleRepayment = monthlyPrincipleRepayment * 100
+    loanOffer.monthlyInterest = monthlyInterest * 100
+    loanOffer.monthlyRepayments = monthlyRepayments * 100
+    loanOffer.totalInterest = loanOffer.monthlyInterest * tenorx
+    loanOffer.interest = Math.round(loanOffer.monthlyRepayments * tenorx)
+    loanOffer.repaymentSchedule = repaymentSchedule
     for (var i = 0; i < tenorx; i++) {
-      let obj = {};
-      obj.monthlyInterest = monthlyInterest * 100;
-      obj.monthlyRepayments = monthlyRepayments * 100;
-      obj.hasPaid = false;
-      obj.dueDate = "";
-      repaymentSchedule.push(obj);
+      let obj = {}
+      obj.monthlyInterest = monthlyInterest * 100
+      obj.monthlyRepayments = monthlyRepayments * 100
+      obj.hasPaid = false
+      obj.dueDate = ''
+      repaymentSchedule.push(obj)
     }
     // console.log('loanOffer: '+JSON.stringify(loanOffer));
-    return loanOffer;
-  },
-};
+    return loanOffer
+  }
+}

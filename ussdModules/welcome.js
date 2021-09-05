@@ -9,7 +9,7 @@ module.exports = {
         menu.session.get("loginStatus").then((status) => {
           if (status) {
             menu.con(
-              "Welcome to SpectrumMFB. Choose an option " +
+              "Welcome to SpectrumMFB . Choose an option " +
                 "\n1. Airtime \n2. Check balance \n3. Fund Account \n4. Services \n5. Referrals  \n6. Loans \n0. Exit "
             );
           } else {

@@ -10,7 +10,7 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.get('*', (req, res) => {
-	res.send('This is a ussd application');
+	res.send('This is SpectrumMFB USSD application');
 });
 
 config(app);
