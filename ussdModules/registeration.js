@@ -1,4 +1,5 @@
-const { textfunc, registerUser, message, scheme } = require('./buddyFuctions')
+const { textfunc, message, scheme } = require('./buddyFuctions')
+const { registerUser } = require('../services/account')
 
 module.exports = {
   RegisterUser (menu) {
@@ -43,6 +44,48 @@ module.exports = {
 
     menu.state('reg', {
       run: () => {
+        menu.con('Welcome \n1. Open with BVN \n2. Open without BVN')
+      },
+
+      next: {
+        '*[0-9]': () => {
+          return new Promise(resolve => {
+            if (menu.val === '1') {
+              // registrationModel.gender = "male";
+              registrationModel[menu.args.phoneNumber].gender = 'male'
+              resolve('reg.bvn')
+            } else if (menu.val === '2') {
+              resolve('reg.fName')
+            } else {
+              resolve('reg')
+            }
+          })
+        }
+      }
+    })
+
+    menu.state('reg.bvn', {
+      run: () => {
+        menu.con('Please enter a valid BVN')
+      },
+
+      next: {
+        '*[0-9]': () => {
+          return new Promise(resolve => {
+            if (menu.val.length === 11) {
+              registrationModel[menu.args.phoneNumber].bvn = menu.val
+              // menu.session.set("pin1", menu.val);
+              resolve('reg.fName')
+            } else {
+              resolve('reg.bvn')
+            }
+          })
+        }
+      }
+    })
+
+    menu.state('reg.fName', {
+      run: () => {
         menu.con('Welcome, Enter First name')
       },
       next: {
@@ -85,7 +128,7 @@ module.exports = {
         menu.con('Enter your email address')
       },
       next: {
-        '*[a-zA-Z]+': () => {
+        '*\\w+@\\w+\\.\\w+': () => {
           return new Promise(resolve => {
             // var re = /\S+@\S+\.\S+/;
             if (menu.val.length > 0) {
@@ -120,13 +163,13 @@ module.exports = {
 
     menu.state('reg.Pin', {
       run: () => {
-        menu.con('Please select/enter a six (6) digit* PIN')
+        menu.con('Please select your password. Must be at least 8 characters')
       },
 
       next: {
-        '*[0-9]': () => {
+        '*[a-zA-Z0-9]+': () => {
           return new Promise(resolve => {
-            if (menu.val.length === 6) {
+            if (menu.val.length > 7) {
               registrationModel[menu.args.phoneNumber].pin1 = menu.val
               // menu.session.set("pin1", menu.val);
               resolve('reg.ConfirmPin')
@@ -140,10 +183,12 @@ module.exports = {
 
     menu.state('inValid.Pin', {
       run: () => {
-        menu.con('PIN must be 6 digits!\n Pleae enter a valid PIN')
+        menu.con(
+          'Password must be a minimum of 8 characters!\n Please enter a valid password'
+        )
       },
       next: {
-        '*[0-9]': () => {
+        '*[a-zA-Z0-9]': () => {
           return new Promise(resolve => {
             if (menu.val.length === 6) {
               // menu.session.set("pin1", menu.val);
@@ -163,7 +208,7 @@ module.exports = {
       },
 
       next: {
-        '*[0-9]': () => {
+        '*[a-zA-Z0-9]': () => {
           return new Promise(async (resolve, reject) => {
             const firstPin = registrationModel[menu.args.phoneNumber].pin1
             if (firstPin === menu.val) {
@@ -213,21 +258,21 @@ module.exports = {
             registrationModel[menu.args.phoneNumber].sName
           }, ${registrationModel[menu.args.phoneNumber].username}, ${
             registrationModel[menu.args.phoneNumber].email
-          }, 
-            ${
-              registrationModel[menu.args.phoneNumber].pin1
-            }, \nPress 1 to confirm`
+          },
+          ${menu.args.phoneNumber},
+          ${registrationModel[menu.args.phoneNumber].bvn},
+          Password:  ${
+            registrationModel[menu.args.phoneNumber].pin1
+          }, \nPress 1 to confirm`
         )
       },
       next: {
         1: 'register.User'
-        // 2: "loan",
       }
     })
 
     menu.state('register.User', {
       run: () => {
-        // textfunc(sessions[menu.args.sessionId], menu.args.phoneNumber);
         return new Promise(resolve => {
           console.log(
             registrationModel[menu.args.phoneNumber],
@@ -243,23 +288,11 @@ module.exports = {
             menu.args.phoneNumber
           ).then(
             async res => {
-              console.log('******************')
-              console.log(res)
-              console.log('******************')
-              if (res.status === true) {
-                await message(res.message, menu.args.phoneNumber)
-                resolve(
-                  menu.end(
-                    `Registration was successful. \n Your account Number is ${00001}`
-                  )
-                )
-              } else {
-                resolve(menu.end(res.message))
-              }
+              return resolve(menu.end(res.message))
             },
             err => {
               console.log(err, 'this is the error')
-              resolve(menu.end(' Error !!!'))
+              resolve(menu.end(err?.message ?? 'Registration Failed.'))
             }
           )
         })

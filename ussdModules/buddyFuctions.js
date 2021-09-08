@@ -1,6 +1,6 @@
 const axios = require('axios')
 
-const apiUrl = 'http://staging.spectrumpay.com.ng/api/'
+const apiUrl = 'https://staging.spectrumpay.com.ng/api/'
 const scheme = 'Spectrum'
 
 module.exports = {
@@ -162,54 +162,6 @@ module.exports = {
     })
   },
 
-  async registerUser (regObj, phoneNumber) {
-    try {
-      const accountRequestBody = {
-        firstName: regObj.fName,
-        surname: regObj.sName,
-        homeAddress: '',
-        city: '',
-        phoneNumber: phoneNumber,
-        source: 'ussd'
-      }
-      const userRequestBody = {
-        name: `${regObj.fName} ${regObj.sName}`,
-        username: regObj.username,
-        phoneNumber: phoneNumber,
-        email: regObj.email,
-        source: 'ussd',
-        password: regObj.pin1,
-        accountNumber: ''
-      }
-      console.log({ accountRequestBody })
-
-      const accountAPIRequest = await axios.post(
-        `${apiUrl}create_account`,
-        accountRequestBody
-      )
-
-      console.log({ accountAPIRequest })
-
-      const accountNumber = 1000001
-
-      userRequestBody.accountNumber = accountNumber
-
-      const userAPIRequest = await axios.post(
-        `${apiUrl}user/create`,
-        userRequestBody
-      )
-
-      console.log({ userAPIRequest })
-
-      return {
-        status: true,
-        data: accountAPIRequest,
-        message: `Welcome to SpectrumMFB ${accountRequestBody.firstName.toUpperCase()} ${accountRequestBody.surname.toUpperCase()}. Your account number is ${accountNumber}.\nPlease visit http://spectrumpay.com.ng/ for further instructions`
-      }
-    } catch (error) {
-      return { status: false, message: 'User registration failed. Try again later. SpectrumMFB', error: error }
-    }
-  },
 
   getLoanTyes () {
     return axios.get(`${apiUrl}`)

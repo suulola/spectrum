@@ -152,11 +152,6 @@ module.exports = {
     });
   },
 
-  registerUser(regObj) {
-    console.log(regObj, "rEGobj");
-    return axios.post(`${apiUrl}users/register_user`, regObj);
-  },
-
   getLoanTyes() {
     return axios.get(`${apiUrl}`);
   },

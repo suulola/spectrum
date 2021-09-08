@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const logger = require('morgan');
 const cors = require('cors');
 const { config } = require('./ussdModules/config');
-const port = process.env.PORT || 3030;
+const port = process.env.PORT || 3031;
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
