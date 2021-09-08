@@ -42,4 +42,3 @@ __my-test__
 
 # ignore yarn.lock
 yarn.lock
-node_modules/*
