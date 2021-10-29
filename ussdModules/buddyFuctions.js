@@ -15,22 +15,6 @@ module.exports = {
       scheme: scheme
     })
   },
-  // fetchBalance(phonenumber) {
-  //   return new Promise((resolve, reject) => {
-  //     resolve(phonenumber * 1);
-  //   });
-  // },
-  fetchBalance (accountNumber) {
-    return axios.post(`${apiUrl}cba/getBalance`, {
-      accountNumber: accountNumber
-    })
-  },
-  checkIfUserExists (phoneNumber) {
-    return axios.post(`${apiUrl}users/getUsersByMobile/`, {
-      x: phoneNumber,
-      scheme: scheme
-    })
-  },
   debitCBAAccount (accountNumber, amount) {
     let debitModel = {
       accountNumber: accountNumber,

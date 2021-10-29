@@ -1,8 +1,8 @@
 module.exports = {
-  successResponse(message) {
+  successResponse(message, data = null) {
     return {
       status: true,
-      data: null,
+      data,
       message: message
     }
   },

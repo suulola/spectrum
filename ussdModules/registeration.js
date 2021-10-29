@@ -163,13 +163,13 @@ module.exports = {
 
     menu.state('reg.Pin', {
       run: () => {
-        menu.con('Please select your password. Must be at least 8 characters')
+        menu.con('Please enter your 4 digits PIN')
       },
 
       next: {
-        '*[a-zA-Z0-9]+': () => {
+        '*[0-9]': () => {
           return new Promise(resolve => {
-            if (menu.val.length > 7) {
+            if (menu.val.length === 4) {
               registrationModel[menu.args.phoneNumber].pin1 = menu.val
               // menu.session.set("pin1", menu.val);
               resolve('reg.ConfirmPin')
@@ -183,14 +183,12 @@ module.exports = {
 
     menu.state('inValid.Pin', {
       run: () => {
-        menu.con(
-          'Password must be a minimum of 8 characters!\n Please enter a valid password'
-        )
+        menu.con('PIN must 4 digits!\n Please enter a valid PIN')
       },
       next: {
-        '*[a-zA-Z0-9]': () => {
+        '*[0-9]': () => {
           return new Promise(resolve => {
-            if (menu.val.length === 6) {
+            if (menu.val.length === 4) {
               // menu.session.set("pin1", menu.val);
               registrationModel[menu.args.phoneNumber].pin1 = menu.val
               resolve('reg.ConfirmPin')
@@ -208,7 +206,7 @@ module.exports = {
       },
 
       next: {
-        '*[a-zA-Z0-9]': () => {
+        '*[0-9]': () => {
           return new Promise(async (resolve, reject) => {
             const firstPin = registrationModel[menu.args.phoneNumber].pin1
             if (firstPin === menu.val) {

@@ -24,25 +24,6 @@ module.exports = {
       payload,
     });
   },
-
-  // fetchBalance(phonenumber) {
-  //   return new Promise((resolve, reject) => {
-  //     resolve(phonenumber * 1);
-  //   });
-  // },
-
-  fetchBalance(accountNumber) {
-    return axios.post(`${apiUrl}cba/getBalance`, {
-      accountNumber: accountNumber,
-    });
-  },
-
-  checkIfUserExists(phoneNumber) {
-    return axios.post(`${apiUrl}users/getUsersByMobile/`, {
-      x: phoneNumber,
-      scheme: scheme,
-    });
-  },
   verifyPin(pin, phonenumber) {
     return axios.post(`${apiUrl}auth/login`, {
       xMobile: phonenumber,

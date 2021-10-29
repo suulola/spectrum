@@ -1,178 +1,131 @@
-const { networkProviders } = require("./consts");
-const {
-  checkIfUserExists,
-  UpdateWallet,
-} = require("./universalFuctions");
-const { payBill } = require("./vtpass");
-const { scheme } = require("./consts");
+const { networkProviders } = require('./consts')
+const { airtimePurchase } = require('../services/bill')
 
 module.exports = {
-  serviceAirtimeState(menu) {
-    let selectedNetworkProvideIndex = "";
-    let amount = "";
-    let bu;
-    let airtimeMes = "";
-    menu.state("service.airtime", {
+  serviceAirtimeState (menu) {
+    let selectedNetworkProvideIndex = ''
+    let airtimeModel = {}
+    let airtimeMessage = ''
+
+    menu.state('service.airtime', {
       run: () => {
-        let joiner = [];
+        let joiner = []
         networkProviders.map((provider, index) => {
-          joiner.push(`${index + 1}.${provider.name}`);
-        });
-        menu.con(joiner.join("\n"));
+          joiner.push(`${index + 1}.${provider.name}`)
+        })
+        menu.con(joiner.join('\n'))
       },
       next: {
-        "*[1-4]": () => {
-          return new Promise((resolve) => {
-            selectedNetworkProvideIndex = menu.val - 1;
-            resolve("service.airtime.amt");
-          });
+        '*[1-4]': () => {
+          return new Promise(resolve => {
+            selectedNetworkProvideIndex = menu.val - 1
+            resolve('service.airtime.amt')
+          })
         },
-        0: "services",
-      },
-    });
-    menu.state("service.airtime.amt", {
+        0: 'services'
+      }
+    })
+    menu.state('service.airtime.amt', {
       run: () => {
-        menu.con("Please enter amount:");
+        menu.con('Please enter amount:')
       },
       next: {
-        "*[1-9]": () => {
-          return new Promise((resolve) => {
-            amount = menu.val;
-            resolve("service.airtime.getphone");
-          });
+        '*[1-9]': () => {
+          return new Promise(resolve => {
+            if (menu.val >= 100) {
+              resolve('service.airtime.getphone')
+              airtimeModel.amount = menu.val
+            } else {
+              resolve('service.airtime.invalidamount')
+            }
+          })
         },
-        0: "services",
-      },
-    });
+        0: 'services'
+      }
+    })
 
-    menu.state("service.airtime.getphone", {
+    menu.state('service.airtime.invalidamount', {
       run: () => {
-        menu.con("Enter phone number:");
+        menu.con('Amount cannot be less than N100. Enter amount:')
       },
       next: {
-        "*[1-9]": () => {
-          phone = menu.val;
-          return "services.airtime.confir";
+        '*[1-9]': () => {
+          return new Promise(resolve => {
+            // TODO: Change back to 100
+            if (menu.val >= 10) {
+              resolve('service.airtime.getphone')
+              airtimeModel.amount = menu.val
+            } else {
+              resolve('service.airtime.invalidamount')
+            }
+          })
         },
-        0: "services",
-      },
-    });
+        0: 'services'
+      }
+    })
 
-    menu.state("services.airtime.confir", {
+    menu.state('service.airtime.getphone', {
+      run: () => {
+        menu.con('Enter phone number:')
+      },
+      next: {
+        '*[1-9]': () => {
+          if (menu.val.length === 11) {
+            airtimeModel.phone = menu.val
+            return 'services.airtime.confirm'
+          }
+          return 'services.airtime.getphone'
+        },
+        0: 'services'
+      }
+    })
+
+    menu.state('services.airtime.confirm', {
       run: () => {
         menu.con(
-          `Confirm: ${networkProviders[selectedNetworkProvideIndex].name} \n Phone Number: ${phone} Amount:N${amount} \n Press 1 to proceed \n0. Back`
-        );
+          `Confirm: ${networkProviders[selectedNetworkProvideIndex].name} \n Phone Number: ${airtimeModel.phone} Amount:N${airtimeModel.amount} \n Press 1 to proceed \n0. Back`
+        )
       },
       next: {
         1: () => {
-          return new Promise((resolve) => {
-            checkIfUserExists(menu.args.phoneNumber).then(async (data) => {
-              bu = data.data[0];
-              console.log(bu);
-              if (!data.data[0].account) {
-                menu.end("Contact Customer Care for Account Upgrade");
-                return;
-              }
-              if (amount < 100) {
-                menu.end("Amount too small");
-                return;
-              }
-              let account_number = data.data[0].account.accountNumber;
+          return new Promise(async resolve => {
+            // make API call
+            console.log('Processing Airtime')
+            airtimeModel.serviceID =
+              networkProviders[selectedNetworkProvideIndex].value
+            const accountNumber = await menu.session.get('accountNumber')
+            console.log({ accountNumber })
 
-              // let walletCheck = await preparePurchase(
-              //   account_number,
-              //   amount * 100
-              // );
-              // if (walletCheck.canProceed) {
-                console.log("Processing Airtime");
-                let model = {
-                  account_number,
-                  mobile: bu.mobile,
-                  phone: phone,
-                  serviceID:
-                    networkProviders[selectedNetworkProvideIndex].value,
-                  amount: amount * 100,
-                };
-                console.log(model);
-                payBill(model)
-                  .then((res) => {
-                    console.log(res, res);
-                    if(res.data.status === false) {
-                      menu.end(res.data.message || 'Transaction Failed');
-                    }else if (res.data.Success == "TRANSACTION SUCCESSFUL") {
-                      airtimeMes = res.data.Success;
-                      console.log(
-                        "Airtime res: " + JSON.stringify(res.data.Success)
-                      );
-                      bu["transaction"] = {
-                        scheme: scheme,
-                        amount: amount,
-                        transferType: "airtime",
-                        transferProvider: "Spectrum",
-                        transferChannel: "ussd",
-                        transactionData: {},
-                        source: "Account",
-                        destination: "VTPass",
-                        narration:
-                          networkProviders[selectedNetworkProvideIndex].value +
-                          " Airtime VTU to: " +
-                          phone,
-                        state: "complete",
-                        isCredit: false,
-                        beneficiaryInfo: {
-                          _id: bu._id,
-                          fullname: bu.fName + " " + bu.sName,
-                          mobile: bu.mobile,
-                          qrCode: bu.qrCode,
-                          imageUrl: bu.imageUrl,
-                        },
-                      };
-                      //   bu.wallet.balance = 0;
-                      //   bu.wallet.ledger_balance = 0;
-                      //   bu.wallet.transaction_funds = 0;
-                      //   console.log("Airtime BU: " + JSON.stringify(bu));
-                      UpdateWallet(bu)
-                        .then((updateRes) => {
-                          console.log("======================================");
-                          console.log(updateRes);
-                          // if (updateRes) {
-                          //   delete bu["transaction"];
-                          // }
-                          airtimeMes = "Transaction successful";
-                          menu.end(airtimeMes);
-                          // resolve("service.airtime.mes");
-                        })
-                        .catch((err) => {
-                          airtimeMes = "Transaction successful";
-                          menu.end(airtimeMes);
-                          // resolve("service.airtime.mes");
-                        });
-                    } else if (res.data.Failed) {
-                      airtimeMes = res.data.Failed;
-                      menu.end(airtimeMes);
-                      // resolve("service.airtime.mes");
-                    }
-                  })
-                  .catch((err) => {
-                    airtimeMes = "Transaction Failed. Try again later" //err.response.data.Failed;
-                    menu.end(airtimeMes);
-                    // resolve("service.airtime.mes");
-                  });
-              // } else {
-              //   resolve("service.bills.lowBalance");
-              // }
-            });
-          });
+            airtimePurchase(airtimeModel, menu.args.phoneNumber, accountNumber)
+              .then(response => {
+                console.log({ response })
+
+                if (response.status === true) {
+                  menu.end(
+                    response?.message ??
+                      'Success. Your request is being processed.'
+                  )
+                } else {
+                  menu.end(
+                    response?.message ??
+                      'Recharge Failed. Please try again later'
+                  )
+                }
+              })
+              .catch(error => {
+                menu.end('Transaction Failed. Try again later')
+                resolve('service.airtime')
+              })
+          })
         },
-        0: "",
-      },
-    });
+        0: ''
+      }
+    })
 
-    menu.state("service.airtime.mes", {
+    menu.state('service.airtime.mes', {
       run: () => {
-        menu.end(airtimeMes);
-      },
-    });
-  },
-};
+        menu.end(airtimeMessage)
+      }
+    })
+  }
+}

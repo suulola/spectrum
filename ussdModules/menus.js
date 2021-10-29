@@ -1,54 +1,53 @@
-const { checkIfUserExists } = require("./buddyFuctions");
-const { RegisterUser } = require("./registeration");
-const { referalState } = require("./referrals");
-const { checkBalanceState } = require("./checkbalance");
-const { loanState } = require("./loan");
-const { welcomeState } = require("./welcome");
-const { fundWalletState } = require("./fundWallet");
-const { payBackLoanState } = require("./payBackLoan");
-const { servicesState } = require("./services");
-const { scheme } = require("./buddyFuctions");
+const { checkIfUserExists } = require('../services/user')
+const { RegisterUser } = require('./registeration')
+const { referalState } = require('./referrals')
+const { checkBalanceState } = require('./checkbalance')
+const { loanState } = require('./loan')
+const { welcomeState } = require('./welcome')
+const { transfers } = require('./transfers')
+const { payBackLoanState } = require('./payBackLoan')
+const { servicesState } = require('./services')
 
 module.exports = {
-  buddymenus(menu) {
+  buddymenus (menu) {
     menu.startState({
-      run: () => {
-        // console.log(menu.args.phoneNumber, 'phoneNumber');
-        checkIfUserExists(menu.args.phoneNumber).then(
-          (val) => {
-            menu.session.set("loginStatus", "");
-            if (val.data.length < 1) {
-              menu.con("Welcome to SpectrumMFB USSD Services"  + " \n1. Register \n2. Help");
-            } else {
-              // if (val.data[0].account) {
-              menu.con("Welcome to SpectrumMFB "  + ", \nPlease enter PIN");
-              // }
-              // else {
-              //   menu.con("Contact Customer Care for Account Upgrade");
-              // }
-            }
-          },
-          (err) => {
-            console.log(err);
+      run: async () => {
+        try {
+          const request = await checkIfUserExists(menu.args.phoneNumber)
+          console.log({ request }, 'MENU')
+          menu.session.set('loginStatus', '')
+          if (request.status === true) {
+            menu.session.set('user_token', request.data.token)
+            menu.con('Welcome to SpectrumMFB ' + ', \nPlease enter PIN')
+          } else {
             menu.con(
-              "Welcome to SpectrumMFB USSD Service "  + " \n" + "\n1. Register" + "\n2. Help"
-            );
+              'Welcome to SpectrumMFB USSD Services' +
+                ' \n1. Register \n2. Help'
+            )
           }
-        );
+        } catch (error) {
+          console.log({ error })
+          menu.con(
+            'Welcome to SpectrumMFB USSD Service ' +
+              ' \n' +
+              '\n1. Register' +
+              '\n2. Help'
+          )
+        }
       },
       next: {
-        1: "reg",
-        2: "help",
-        "*[0-9]": "welcomeState",
-      },
-    });
-    welcomeState(menu);
-    RegisterUser(menu);
-    referalState(menu);
-    checkBalanceState(menu);
-    loanState(menu);
-    fundWalletState(menu);
-    payBackLoanState(menu);
-    servicesState(menu);
-  },
-};
+        1: 'reg',
+        2: 'help',
+        '*[0-9]': 'welcomeState'
+      }
+    })
+    welcomeState(menu)
+    RegisterUser(menu)
+    referalState(menu)
+    checkBalanceState(menu)
+    loanState(menu)
+    transfers(menu)
+    payBackLoanState(menu)
+    servicesState(menu)
+  }
+}

@@ -1,36 +1,39 @@
-const { fetchBalance } = require("./buddyFuctions");
-const {
-  checkIfUserExists,
-} = require("./universalFuctions");
+const { fetchBalance } = require('../services/account')
+const { checkIfUserExists, fetchUserDetail } = require('../services/user')
 
 module.exports = {
-  checkBalanceState(menu) {
-    menu.state("checkBalance", {
-      run: () => {
-        return new Promise((resolve) => {
-          checkIfUserExists(menu.args.phoneNumber).then(async (data) => {
-            let userData = data.data[0]
-            if (!userData.account) {
-              menu.end("Contact Customer Care for Account Upgrade");
-              return;
-            }
-            let account_number = userData.account.accountNumber;
+  checkBalanceState (menu) {
+    menu.state('checkBalance', {
+      run: async () => {
+        try {
+          const request = await checkIfUserExists(menu.args.phoneNumber)
 
-            let bal = await fetchBalance(account_number);
+          if (request?.status !== true) {
+            return menu.end('Please try again later')
+          }
 
-            if (bal.data.status === true) {
-              menu.con(
-                `Your Account Balance is: N` + bal.data.data.Balance + "\n0. Back"
-              );
-            } else {
-              menu.end("Please try again later");
-            }
+          const userData = await fetchUserDetail()
 
-          })})
+          if (userData?.status !== true || !userData?.data?.account_number) {
+            return menu.end('Contact Customer Care for Account Upgrade')
+          }
+
+          let balance = await fetchBalance(userData.data.account_number)
+
+          if (balance?.status !== true || !balance?.data?.balance) {
+            return menu.end(`Error fetching account balance`)
+          }
+
+          menu.con(
+            `Your Account Balance is: N` + balance.data.balance + '\n0. Back'
+          )
+        } catch (error) {
+          menu.end('Please try again later')
+        }
       },
       next: {
-        0: "welcomeState",
-      },
-    });
-  },
-};
+        0: 'welcomeState'
+      }
+    })
+  }
+}
